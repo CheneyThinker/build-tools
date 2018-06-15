@@ -16,8 +16,10 @@ public class BuildTools {
 			String projectName = null;
 			String port = null;
 			String author = null;
+			BuildType type = new BuildType();
 			try {
 				projectName = args[0];
+				projectName = type.firstUpperCase(projectName);
 			} catch (Exception e) {
 				projectName = "CheneyThinker";
 			}
@@ -68,7 +70,6 @@ public class BuildTools {
 				System.out.println();
 				
 				System.out.println("\tPreparing to write file!");
-					BuildType type = new BuildType();
 					
 					write(type.getBase64JS(), front + "/jquery.base64.js");
 					write(type.getRequestJS(projectName, port), front + "/request.js");

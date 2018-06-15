@@ -168,10 +168,10 @@ public class BuildType {
 				.append("    <h1><center>Demo Of ").append(projectName).append("</center></h1>\n")
 				.append("    <table border=\"1\" align=\"center\">\n")
 				.append("      <tr>\n")
-				.append("        <th>工程名</th>\n")
-				.append("        <th>作者</th>\n")
-				.append("        <th>版本</th>\n")
-				.append("        <th>版本号</th>\n")
+				.append("        <th>宸ョ▼鍚�</th>\n")
+				.append("        <th>浣滆��</th>\n")
+				.append("        <th>鐗堟湰</th>\n")
+				.append("        <th>鐗堟湰鍙�</th>\n")
 				.append("      </tr>\n")
 				.append("      <tr>\n")
 				.append("        <td id=\"projectName\"></td>\n")
@@ -355,7 +355,7 @@ public class BuildType {
 				.append("import com.fasterxml.jackson.annotation.JsonInclude;\n")
 				.append("\n")
 				.append("/**\n")
-				.append(" * @description 响应实体\n")
+				.append(" * @description 鍝嶅簲瀹炰綋\n")
 				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
@@ -402,7 +402,7 @@ public class BuildType {
 		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core;\n")
 				.append("\n")
 				.append("/**\n")
-				.append(" * @description 统一结果响应码\n")
+				.append(" * @description 缁熶竴缁撴灉鍝嶅簲鐮乗n")
 				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
@@ -434,7 +434,7 @@ public class BuildType {
 				.append("import org.springframework.util.StringUtils;\n")
 				.append("\n")
 				.append("/**\n")
-				.append(" * @description 响应结果生成器\n")
+				.append(" * @description 鍝嶅簲缁撴灉鐢熸垚鍣╘n")
 				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
@@ -588,7 +588,7 @@ public class BuildType {
 				.append("\n")
 				.append("  private static <T> T getEntity(String json, Class<T> clazz, boolean fromBase64) throws Exception {\n")
 				.append("    if (StringUtils.isEmpty(json)) {\n")
-				.append("      throw new Exception(\"参数不允许为空!\");\n")
+				.append("      throw new Exception(\"鍙傛暟涓嶅厑璁镐负绌�!\");\n")
 				.append("    }\n")
 				.append("    if (fromBase64) {\n")
 				.append("      byte[] bytes = Base64.getDecoder().decode(json);\n")
@@ -605,7 +605,7 @@ public class BuildType {
 		builder.delete(0, builder.length());
 	}
 	
-	private String firstUpperCase(String content) {
+	public String firstUpperCase(String content) {
 		return content.toUpperCase().charAt(0) + content.substring(1);
 	}
 	
