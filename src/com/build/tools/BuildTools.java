@@ -18,14 +18,20 @@ public class BuildTools {
 			String author = null;
 			try {
 				projectName = args[0];
-				port = args[1];
-				author = args[2];
 			} catch (Exception e) {
 				projectName = "CheneyThinker";
+			}
+			try {
+				port = args[1];
+			} catch (Exception e) {
 				port = "9527";
+			}
+			try {
+				author = args[2];
+			} catch (Exception e) {
 				author = "CheneyThinker";
 			}
-			System.out.println("\nConfig Info From Input:\n");
+			System.out.println("Config Info From Input:\n");
 			System.out.println("ProjectName: "+ projectName);
 			System.out.println("port: " + port);
 			System.out.println("author: " + author);
