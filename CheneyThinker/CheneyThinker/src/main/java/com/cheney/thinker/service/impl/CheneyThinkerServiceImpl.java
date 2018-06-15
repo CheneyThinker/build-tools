@@ -17,8 +17,8 @@ public class CheneyThinkerServiceImpl implements CheneyThinkerService {
   public Map<String, Object> index(String json) throws Exception {
     Map<String, Object> map = CheneyThinkerUtils.getMapFromBase64(json);
     map.put("projectName", "CheneyThinker");
-    map.put("version", "1.0");
-    map.put("model", "PRO");
+    map.put("version", "PRO");
+    map.put("major", "1.0");
     return map;
   }
 

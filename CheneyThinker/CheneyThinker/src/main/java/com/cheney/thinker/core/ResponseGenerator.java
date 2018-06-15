@@ -5,7 +5,8 @@ import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
 /**
- * @description 鍝嶅簲缁撴灉鐢熸垚鍣╘n * @author CheneyThinker
+ * @description Generator of Response
+ * @author CheneyThinker
  * @date 2018-06-16
  */
 public final class ResponseGenerator {

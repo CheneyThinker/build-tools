@@ -3,7 +3,7 @@ package com.cheney.thinker.core;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * @description 鍝嶅簲瀹炰綋
+ * @description Entity of Response
  * @author CheneyThinker
  * @date 2018-06-16
  */

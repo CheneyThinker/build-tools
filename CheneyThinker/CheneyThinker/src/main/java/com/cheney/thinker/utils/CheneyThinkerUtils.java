@@ -33,7 +33,7 @@ public final class CheneyThinkerUtils {
 
   private static <T> T getEntity(String json, Class<T> clazz, boolean fromBase64) throws Exception {
     if (StringUtils.isEmpty(json)) {
-      throw new Exception("鍙傛暟涓嶅厑璁镐负绌�!");
+      throw new Exception("Argument Not Allowed Empty!");
     }
     if (fromBase64) {
       byte[] bytes = Base64.getDecoder().decode(json);
