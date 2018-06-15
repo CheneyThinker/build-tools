@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>CheneyThinker</title>
+    <style>
+      td {
+        text-align: center
+      }
+    </style>
+  </head>
+  <body>
+    <h1><center>Demo Of CheneyThinker</center></h1>
+    <table border="1" align="center">
+      <tr>
+        <th>宸ョ▼鍚�</th>
+        <th>浣滆��</th>
+        <th>鐗堟湰</th>
+        <th>鐗堟湰鍙�</th>
+      </tr>
+      <tr>
+        <td id="projectName"></td>
+        <td id="author"></td>
+        <td id="model"></td>
+        <td id="version"></td>
+      </tr>
+    </table>
+  </body>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="jquery.base64.js"></script>
+  <script src="request.js"></script>
+  <script>
+    $(
+      function() {
+        postBase64Json
+        (
+          'index',
+          {
+            author: 'CheneyThinker'
+          },
+          function(data) {
+            for(var key in data) {
+              $('#' + key).html(data[key]);
+            }
+          }
+        )
+      }
+    )
+  </script>
+</html>
