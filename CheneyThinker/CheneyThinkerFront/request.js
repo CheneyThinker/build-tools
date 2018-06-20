@@ -2,7 +2,7 @@ $.base64.utf8encode = true
 
 function postAndGet(type, handler, data, success, error) {
   $.ajax({
-    url : 'http://192.168.0.20:9527/CheneyThinker/' + handler,
+    url : 'http://192.30.255.132:9527/CheneyThinker/' + handler,
     type : type,
     data : data,
     dataType : 'json'

@@ -7,7 +7,7 @@ import org.springframework.util.StringUtils;
 /**
  * @description Generator of Response
  * @author CheneyThinker
- * @date 2018-06-16
+ * @date 2018-06-20
  */
 public final class ResponseGenerator {
 

@@ -64,6 +64,8 @@ public class BuildTools {
 					controller.mkdirs();
 					File service = new File(project.getPath() + "/service/impl");
 					service.mkdirs();
+					File config = new File(project.getPath() + "/config");
+					config.mkdirs();
 					
 				System.out.println("\tDirectory build Finished!");
 
@@ -93,6 +95,8 @@ public class BuildTools {
 					write(type.getResponseGenerator(projectName, author), core.getPath() + "/ResponseGenerator.java");
 				
 					write(type.getController(projectName, author), controller.getPath() + "/" + projectName + "Controller.java");
+					
+					write(type.getRestTemplate(projectName, author), config.getPath() + "/RestTemplateConfig.java");
 					
 				System.out.println("\tFiles was Finished!");
 					

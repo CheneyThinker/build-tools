@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 /**
  * @description Entity of Response
  * @author CheneyThinker
- * @date 2018-06-16
+ * @date 2018-06-20
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {

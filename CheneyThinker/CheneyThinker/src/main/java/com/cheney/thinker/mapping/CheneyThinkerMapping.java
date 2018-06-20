@@ -3,7 +3,7 @@ package com.cheney.thinker.mapping;
 /**
  * @description
  * @author CheneyThinker
- * @date 2018-06-16
+ * @date 2018-06-20
  */
 public enum CheneyThinkerMapping {
 
