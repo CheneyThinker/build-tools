@@ -208,7 +208,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getPom(String projectName, String packageName, String[] jarPacks, boolean sourceOfWsdl) {
+	public String getPom(String projectName, String packageName, String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl) {
 		clear();
 		builder	.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 			   	.append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n")
@@ -238,14 +238,25 @@ public class BuildType {
 			   	.append("      <groupId>org.springframework.boot</groupId>\n")
 			   	.append("      <artifactId>spring-boot-starter-web</artifactId>\n")
 			   	.append("    </dependency>\n");
-		if (!BuildUtils.isEmpty(jarPacks) && !sourceOfWsdl) {
-			for (String string : jarPacks) {
+		if (!BuildUtils.isEmpty(outerJar)) {
+			for (String string : outerJar) {
+				builder	.append("    <dependency>\n")
+						.append("      <groupId>").append(string.substring(0, string.lastIndexOf("-")).replaceAll("-", ".")).append("</groupId>\n")
+						.append("      <artifactId>").append(string.substring(0, string.lastIndexOf("-"))).append("</artifactId>\n")
+						.append("      <version>").append(string.substring(string.lastIndexOf("-") + 1)).append("</version>\n")
+						.append("      <scope>system</scope>\n")
+						.append("      <systemPath>${pom.basedir}/src/main/resources/lib/").append(string).append(".jar</systemPath>\n")
+						.append("    </dependency>\n");
+			}
+		}
+		if (!BuildUtils.isEmpty(wsdlJars) && !sourceOfWsdl) {
+			for (String string : wsdlJars) {
 				builder	.append("    <dependency>\n")
 						.append("      <groupId>").append(string).append("</groupId>\n")
 						.append("      <artifactId>").append(string.replaceAll("\\.", "-")).append("</artifactId>\n")
 						.append("      <version>1.0</version>\n")
 						.append("      <scope>system</scope>\n")
-						.append("      <systemPath>${pom.basedir}/src/main/resources/lib/").append(string.replaceAll("\\.", "-")).append(".jar</systemPath>\n")
+						.append("      <systemPath>${pom.basedir}/src/main/resources/lib/").append(string.replaceAll("\\.", "-")).append("-1.0.jar</systemPath>\n")
 						.append("    </dependency>\n");
 			}
 		}
@@ -256,7 +267,7 @@ public class BuildType {
 			   	.append("      <plugin>\n")
 			   	.append("        <groupId>org.springframework.boot</groupId>\n")
 			   	.append("        <artifactId>spring-boot-maven-plugin</artifactId>\n");
-		if (!BuildUtils.isEmpty(jarPacks) && !sourceOfWsdl) {
+		if (!BuildUtils.isEmpty(outerJar) || !BuildUtils.isEmpty(wsdlJars) && !sourceOfWsdl) {
 			builder	.append("        <configuration>\n")
 					.append("          <fork>true</fork>\n")
 					.append("          <includeSystemScope>true</includeSystemScope>\n")

@@ -24,7 +24,8 @@ public class BuildTools {
 			String projectName = null;
 			String port = null;
 			String author = null;
-			String[] wsdls = null;
+			String outerJar = null;
+			String wsdl = null;
 			String sourceOfWsdl = null;
 			BuildType type = new BuildType();
 			try {
@@ -39,24 +40,30 @@ public class BuildTools {
 				port = "9527";
 			}
 			try {
-				author = args[2];
+				outerJar = args[2];
+			} catch (Exception e) {
+			}
+			try {
+				author = args[3];
 			} catch (Exception e) {
 				author = "CheneyThinker";
 			}
 			try {
-				String wsdlFiles = args[3];
-				wsdls = wsdlFiles.contains("$") ? wsdlFiles.split("\\$") : new String[] {wsdlFiles};
+				wsdl = args[4];
 			} catch (Exception e) {
 			}
 			try {
-				sourceOfWsdl = args[4];
+				sourceOfWsdl = args[5];
 			} catch (Exception e) {
 				sourceOfWsdl = "false";
 			}
 			System.out.println("Config Info From Input:\n");
 			System.out.println("ProjectName: "+ projectName);
 			System.out.println("port: " + port);
+			System.out.println("outerJar: " + outerJar);
 			System.out.println("author: " + author);
+			System.out.println("wsdl: " + wsdl);
+			System.out.println("sourceOfWsdl: " + sourceOfWsdl);
 			
 			System.out.println("\nBuildTools is Running!");
 			
@@ -121,43 +128,67 @@ public class BuildTools {
 					write(type.getController(projectName, packageName, author), controller.getPath() + "/" + projectName + "Controller.java");
 					
 					write(type.getRestTemplate(projectName, packageName, author), config.getPath() + "/RestTemplateConfig.java");
+
+					StringBuffer command = null;
+					String[] outerJars = null;
+					if (!BuildUtils.isEmpty(outerJar)) {
+						File libs = new File(resources.getPath() + "/lib");
+						if (!libs.exists()) {
+							libs.mkdirs();
+						}
+						command = new StringBuffer();
+						outerJars = outerJar.contains("$") ? outerJar.split("\\$") : new String[] {outerJar};
+						for (String string : outerJars) {
+							if (!BuildUtils.isEmpty(string)) {
+								command.append("move ").append(string).append(".jar ").append(libs.getAbsolutePath());
+								command.append("\n");
+							}
+						}
+					}
 					
-					String[] jarPacks = null;
-					if (!BuildUtils.isEmpty(wsdls)) {
+					String[] wsdlJars = null;
+					if (!BuildUtils.isEmpty(wsdl)) {
 						File libs = null;
 						if (sourceOfWsdl.equals("false")) {
 							libs = new File(resources.getPath() + "/lib");
-							libs.mkdirs();
+							if (!libs.exists()) {
+								libs.mkdirs();
+							}
 						}
-						StringBuffer command = new StringBuffer();
-						jarPacks = new String[wsdls.length];
-						for (int i = 0; i < jarPacks.length; i++) {
+						String[] wsdls = wsdl.contains("$") ? wsdl.split("\\$") : new String[] {wsdl};
+						if (BuildUtils.isEmpty(command)) {
+							command = new StringBuffer();
+						}
+						wsdlJars = new String[wsdls.length];
+						for (int i = 0; i < wsdlJars.length; i++) {
 							if (!BuildUtils.isEmpty(wsdls[i])) {
 								String target = wsdls[i];
 								if (wsdls[i].startsWith("http") || wsdls[i].endsWith("?wsdl")) {
 									wsdls[i] = wsdls[i].substring(wsdls[i].lastIndexOf("/") + 1, wsdls[i].length() - 5);
 									if (wsdls[i].contains(".")) {
-										jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].indexOf("."))));
+										wsdlJars[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].indexOf("."))));
 									} else {
-										jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i]));
+										wsdlJars[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i]));
 									}
 								} else {
-									jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].length() - 4)));
+									wsdlJars[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].length() - 4)));
 								}
 								if (sourceOfWsdl.equals("true")) {
-									command.append("wsimport -Xnocompile -s ").append(src.getAbsolutePath()).append(" -p ").append(jarPacks[i]).append(" -encoding UTF-8 -keep ").append(target);
+									command.append("wsimport -Xnocompile -s ").append(src.getAbsolutePath()).append(" -p ").append(wsdlJars[i]).append(" -encoding UTF-8 -keep ").append(target);
 								} else {
-									command.append("wsimport -p ").append(jarPacks[i]).append(" -encoding UTF-8 -keep ").append(target);
+									command.append("wsimport -p ").append(wsdlJars[i]).append(" -encoding UTF-8 -keep ").append(target);
 									command.append("\n");
-									command.append("jar cvf ").append(jarPacks[i].replaceAll("\\.", "-")).append(".jar org");
+									command.append("jar cvf ").append(wsdlJars[i].replaceAll("\\.", "-")).append("-1.0.jar org");
 									command.append("\n");
 									command.append("rd/s/q org");
 									command.append("\n");
-									command.append("move ").append(jarPacks[i].replaceAll("\\.", "-")).append(".jar ").append(libs.getAbsolutePath());
+									command.append("move ").append(wsdlJars[i].replaceAll("\\.", "-")).append("-1.0.jar ").append(libs.getAbsolutePath());
 								}
 								command.append("\n");
 							}
 						}
+					}
+					if (!BuildUtils.isEmpty(command)) {
 						try {
 							//command.append("\n");
 							//command.append("exit");
@@ -174,7 +205,7 @@ public class BuildTools {
 						} catch(Exception e) {
 						}
 					}
-					write(type.getPom(projectName, packageName, jarPacks, sourceOfWsdl.equals("true")), projectName + "/" + projectName + "/pom.xml");
+					write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true")), projectName + "/" + projectName + "/pom.xml");
 					
 				System.out.println("\tFiles was Finished!");
 					
