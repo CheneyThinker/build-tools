@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.build.tools.utils.BuildUtils;
+
 public class BuildType {
 	
 	private StringBuilder builder = new StringBuilder("BuildType");
@@ -206,7 +208,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getPom(String projectName) {
+	public String getPom(String projectName, String packageName, String[] jarPacks, boolean sourceOfWsdl) {
 		clear();
 		builder	.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 			   	.append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n")
@@ -214,7 +216,7 @@ public class BuildType {
 			   	.append("     xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n")
 			   	.append("  <modelVersion>4.0.0</modelVersion>\n")
 			   	.append("\n")
-			   	.append("  <groupId>com.").append(splitByUpperCaseAndAddDot(projectName)).append("</groupId>\n")
+			   	.append("  <groupId>com.").append(packageName).append("</groupId>\n")
 			   	.append("  <artifactId>").append(projectName).append("</artifactId>\n")
 			   	.append("  <version>1.0-PRO</version>\n")
 			   	.append("\n")
@@ -235,15 +237,32 @@ public class BuildType {
 			   	.append("    <dependency>\n")
 			   	.append("      <groupId>org.springframework.boot</groupId>\n")
 			   	.append("      <artifactId>spring-boot-starter-web</artifactId>\n")
-			   	.append("    </dependency>\n")
-			   	.append("  </dependencies>\n")
+			   	.append("    </dependency>\n");
+		if (!BuildUtils.isEmpty(jarPacks) && !sourceOfWsdl) {
+			for (String string : jarPacks) {
+				builder	.append("    <dependency>\n")
+						.append("      <groupId>").append(string).append("</groupId>\n")
+						.append("      <artifactId>").append(string.replaceAll("\\.", "-")).append("</artifactId>\n")
+						.append("      <version>1.0</version>\n")
+						.append("      <scope>system</scope>\n")
+						.append("      <systemPath>${pom.basedir}/src/main/resources/lib/").append(string.replaceAll("\\.", "-")).append(".jar</systemPath>\n")
+						.append("    </dependency>\n");
+			}
+		}
+		builder	.append("  </dependencies>\n")
 			   	.append("\n")
 			   	.append("  <build>\n")
 			   	.append("    <plugins>\n")
 			   	.append("      <plugin>\n")
 			   	.append("        <groupId>org.springframework.boot</groupId>\n")
-			   	.append("        <artifactId>spring-boot-maven-plugin</artifactId>\n")
-			   	.append("      </plugin>\n")
+			   	.append("        <artifactId>spring-boot-maven-plugin</artifactId>\n");
+		if (!BuildUtils.isEmpty(jarPacks) && !sourceOfWsdl) {
+			builder	.append("        <configuration>\n")
+					.append("          <fork>true</fork>\n")
+					.append("          <includeSystemScope>true</includeSystemScope>\n")
+					.append("        </configuration>\n");
+		}
+		builder	.append("      </plugin>\n")
 			   	.append("    </plugins>\n")
 			   	.append("  </build>\n")
 			   	.append("\n")
@@ -259,16 +278,16 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getApplication(String projectName, String author) {
+	public String getApplication(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(";\n")
+		builder	.append("package com.").append(packageName).append(";\n")
 				.append("\n")
 				.append("import org.springframework.boot.SpringApplication;\n")
 				.append("import org.springframework.boot.autoconfigure.SpringBootApplication;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@SpringBootApplication\n")
@@ -303,14 +322,14 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getController(String projectName, String author) {
+	public String getController(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".controller;\n")
+		builder	.append("package com.").append(packageName).append(".controller;\n")
 				.append("\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core.Response;\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core.ResponseGenerator;\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
+				.append("import com.").append(packageName).append(".core.Response;\n")
+				.append("import com.").append(packageName).append(".core.ResponseGenerator;\n")
+				.append("import com.").append(packageName).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
+				.append("import com.").append(packageName).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
 				.append("import org.slf4j.Logger;\n")
 				.append("import org.slf4j.LoggerFactory;\n")
 				.append("\n")
@@ -323,7 +342,7 @@ public class BuildType {
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@RestController\n")
@@ -348,15 +367,15 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getResponse(String projectName, String author) {
+	public String getResponse(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core;\n")
+		builder	.append("package com.").append(packageName).append(".core;\n")
 				.append("\n")
 				.append("import com.fasterxml.jackson.annotation.JsonInclude;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description Entity of Response\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@JsonInclude(JsonInclude.Include.NON_NULL)\n")
@@ -397,13 +416,13 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getResponseCode(String projectName, String author) {
+	public String getResponseCode(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core;\n")
+		builder	.append("package com.").append(packageName).append(".core;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description Code of Response\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("public enum ResponseCode {\n")
@@ -425,17 +444,17 @@ public class BuildType {
 		return builder.toString();
 	}
 
-	public String getResponseGenerator(String projectName, String author) {
+	public String getResponseGenerator(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".core;\n")
+		builder	.append("package com.").append(packageName).append(".core;\n")
 				.append("\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
+				.append("import com.").append(packageName).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
 				.append("import org.slf4j.Logger;\n")
 				.append("import org.springframework.util.StringUtils;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description Generator of Response\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("public final class ResponseGenerator {\n")
@@ -474,14 +493,13 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getMapping(String projectName, String author) {
+	public String getMapping(String projectName, String packageName, String author) {
 		clear();
-		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".mapping;\n")
+		builder	.append("package com.").append(packageName).append(".mapping;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("public enum ").append(firstUpperCase(projectName)).append("Mapping {\n")
@@ -502,15 +520,15 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getService(String projectName, String author) {
+	public String getService(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".service;\n")
+		builder	.append("package com.").append(packageName).append(".service;\n")
 				.append("\n")
 				.append("import java.util.Map;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("public interface ").append(firstUpperCase(projectName)).append("Service {\n")
@@ -521,12 +539,12 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getServiceImpl(String projectName, String author) {
+	public String getServiceImpl(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".service.impl;\n")
+		builder	.append("package com.").append(packageName).append(".service.impl;\n")
 				.append("\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
-				.append("import com.").append(splitByUpperCaseAndAddDot(projectName)).append(".utils.").append(firstUpperCase(projectName)).append("Utils;\n")
+				.append("import com.").append(packageName).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
+				.append("import com.").append(packageName).append(".utils.").append(firstUpperCase(projectName)).append("Utils;\n")
 				.append("import org.springframework.beans.factory.annotation.Autowired;\n")
 				.append("import org.springframework.stereotype.Service;\n")
 				.append("import org.springframework.web.client.RestTemplate;\n")
@@ -535,14 +553,14 @@ public class BuildType {
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@Service\n")
 				.append("public class ").append(firstUpperCase(projectName)).append("ServiceImpl implements ").append(firstUpperCase(projectName)).append("Service {\n")
 				.append("\n")
 				.append("  @Autowired\n")
-				.append("  private RestTemplate restTemplate;")
+				.append("  private RestTemplate restTemplate;\n")
 				.append("\n")
 				.append("  public Map<String, Object> index(String json) throws Exception {\n")
 				.append("    Map<String, Object> map = ").append(firstUpperCase(projectName)).append("Utils.getMapFromBase64(json);\n")
@@ -556,15 +574,14 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getUtils(String projectName, String author) {
+	public String getUtils(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".utils;\n")
+		builder	.append("package com.").append(packageName).append(".utils;\n")
 				.append("\n")
 				.append("import com.fasterxml.jackson.databind.ObjectMapper;\n")
 				.append("import org.springframework.http.HttpEntity;\n")
 				.append("import org.springframework.http.HttpHeaders;\n")
 				.append("import org.springframework.http.MediaType;\n")
-				.append("import org.springframework.http.ResponseEntity;\n")
 				.append("import org.springframework.util.LinkedMultiValueMap;\n")
 				.append("import org.springframework.util.MultiValueMap;\n")
 				.append("import org.springframework.util.StringUtils;\n")
@@ -573,9 +590,13 @@ public class BuildType {
 				.append("import java.util.Base64;\n")
 				.append("import java.util.Map;\n")
 				.append("\n")
+				//.append("/*Call WebService(\n")
+				//.append("                  wsimport -Xnocompile -encoding UTF-8 wsdl-Address\n")
+				//.append("                  保存wsdl文件到xml文件之后查找删除<s:element ref=\"s:schema\" />之后可修改可不修改<s:any />为<s:any minOccurs=\"2\"maxOccurs=\"2\"/>可执行以上语句得到JAVA源文件\n")
+				//.append("                 )*/\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("public final class ").append(firstUpperCase(projectName)).append("Utils {\n")
@@ -610,28 +631,26 @@ public class BuildType {
 				.append("  }\n")
 				.append("\n")
 				.append("  public static <T> T get(String url, RestTemplate restTemplate, Class<T> clazz) {\n")
-				.append("    return restTemplate.getForEntity(url, clazz).getBody();\n")
+				.append("    return restTemplate.getForObject(url, clazz);\n")
 				.append("  }\n")
 				.append("\n")
-				.append("  public static <T> T post(String url, Map<String, Object> params, RestTemplate restTemplate, Class<T> clazz, boolean isSendJson) {\n")
+				.append("  public static <T> T post(String url, Map<String, Object> params, RestTemplate restTemplate, Class<T> clazz) {\n")
 				.append("    HttpHeaders headers = new HttpHeaders();\n")
-				.append("    headers.setContentType(isSendJson ? MediaType.parseMediaType(\"application/json; charset=UTF-8\") : MediaType.APPLICATION_FORM_URLENCODED);\n")
-				.append("    if (isSendJson) {\n")
-				.append("      try {\n")
-				.append("        String json = mapper.writeValueAsString(params);\n")
-				.append("        headers.add(\"Accept\", MediaType.APPLICATION_JSON.toString());\n")
-				.append("        HttpEntity<String> formEntity = new HttpEntity<>(json, headers);\n")
-				.append("        return restTemplate.postForObject(url, formEntity, clazz);\n")
-				.append("      } catch (Exception e) {\n")
-				.append("        //It's impossible to happen\n")
-				.append("        return null;\n")
-				.append("      }\n")
-				.append("    } else {\n")
-				.append("      MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
-				.append("      map.setAll(params);\n")
-				.append("      HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
-				.append("      ResponseEntity<T> response = restTemplate.postForEntity(url, formEntity , clazz);\n")
-				.append("      return (200 == response.getStatusCodeValue() ? (response.hasBody() ? response.getBody() : null) : null);\n")
+				.append("    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);\n")
+				.append("    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
+				.append("    map.setAll(params);\n")
+				.append("    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
+				.append("    return restTemplate.postForObject(url, formEntity , clazz);\n")
+				.append("  }\n")
+				.append("\n")
+				.append("  public static <T> T postJson(String url, Map<String, Object> params, RestTemplate restTemplate, Class<T> clazz) {\n")
+				.append("    HttpHeaders headers = new HttpHeaders();\n")
+				.append("    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);\n")
+				.append("    try {\n")
+				.append("      return restTemplate.postForObject(url, new HttpEntity<String>(mapper.writeValueAsString(params), headers), clazz);\n")
+				.append("    } catch (Exception e) {\n")
+				.append("      //It's impossible to happen\n")
+				.append("      return null;\n")
 				.append("    }\n")
 				.append("  }\n")
 				.append("\n")
@@ -639,27 +658,44 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getRestTemplate(String projectName, String author) {
+	public String getRestTemplate(String projectName, String packageName, String author) {
 		clear();
-		builder	.append("package com.").append(splitByUpperCaseAndAddDot(projectName)).append(".config;\n")
+		builder	.append("package com.").append(packageName).append(".config;\n")
 				.append("\n")
+				.append("import com.fasterxml.jackson.databind.ObjectMapper;\n")
 				.append("import org.springframework.context.annotation.Bean;\n")
 				.append("import org.springframework.context.annotation.Configuration;\n")
+				.append("import org.springframework.http.MediaType;\n")
 				.append("import org.springframework.http.client.ClientHttpRequestFactory;\n")
 				.append("import org.springframework.http.client.SimpleClientHttpRequestFactory;\n")
+				.append("import org.springframework.http.converter.HttpMessageConverter;\n")
+				.append("import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;\n")
 				.append("import org.springframework.web.client.RestTemplate;\n")
+				.append("\n")
+				.append("import java.util.ArrayList;\n")
+				.append("import java.util.List;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
-				.append(" * @author ").append(isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@Configuration\n")
 				.append("public class RestTemplateConfig {\n")
 				.append("\n")
 				.append("  @Bean\n")
-				.append("  RestTemplate restTemplate(ClientHttpRequestFactory factory) {\n")
-				.append("    return new RestTemplate(factory);\n")
+				.append("  public RestTemplate restTemplate(ClientHttpRequestFactory factory) {\n")
+				.append("    RestTemplate restTemplate = new RestTemplate(factory);\n")
+				.append("    List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();\n")
+				.append("    MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();\n")
+				.append("    jsonConverter.setObjectMapper(new ObjectMapper());\n")
+				.append("    List<MediaType> mediaTypes = new ArrayList<>();\n")
+				.append("    mediaTypes.add(MediaType.TEXT_PLAIN);\n")
+				.append("    mediaTypes.add(MediaType.TEXT_HTML);\n")
+				.append("    mediaTypes.add(MediaType.APPLICATION_JSON_UTF8);\n")
+				.append("    jsonConverter.setSupportedMediaTypes(mediaTypes);\n")
+				.append("    converters.add(jsonConverter);\n")
+				.append("    return restTemplate;\n")
 				.append("  }\n")
 				.append("\n")
 				.append("  @Bean\n")
@@ -681,22 +717,5 @@ public class BuildType {
 	public String firstUpperCase(String content) {
 		return content.toUpperCase().charAt(0) + content.substring(1);
 	}
-	
-	private String splitByUpperCaseAndAddDot(String content) {
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0, j = content.length(); i < j; i++) {
-			char ch = content.charAt(i);
-			if (ch >= 'A' && ch <= 'Z') {
-				builder.append(i == 0 ? "" : ".").append((char)(ch + 32));
-			} else {
-				builder.append(ch);
-			}
-		}
-		return builder.toString();
-	}
 
-	private boolean isEmpty(Object str) {
-		return str == null || "".equals(str);
-	}
-	
 }

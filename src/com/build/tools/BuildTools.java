@@ -8,7 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.build.tools.content.BuildType;
+import com.build.tools.utils.BuildUtils;
+import com.build.tools.utils.StreamGobbler;
 
+/*
+cmd /c dir 是执行完dir命令后关闭命令窗口。 
+cmd /k dir 是执行完dir命令后不关闭命令窗口。 
+cmd /c start dir 会打开一个新窗口后执行dir指令，原窗口会关闭。 
+cmd /k start dir 会打开一个新窗口后执行dir指令，原窗口不会关闭。 
+ */
 public class BuildTools {
 	
 	public static void main(String[] args) throws Exception {
@@ -16,6 +24,8 @@ public class BuildTools {
 			String projectName = null;
 			String port = null;
 			String author = null;
+			String[] wsdls = null;
+			String sourceOfWsdl = null;
 			BuildType type = new BuildType();
 			try {
 				projectName = args[0];
@@ -33,6 +43,16 @@ public class BuildTools {
 			} catch (Exception e) {
 				author = "CheneyThinker";
 			}
+			try {
+				String wsdlFiles = args[3];
+				wsdls = wsdlFiles.contains("$") ? wsdlFiles.split("\\$") : new String[] {wsdlFiles};
+			} catch (Exception e) {
+			}
+			try {
+				sourceOfWsdl = args[4];
+			} catch (Exception e) {
+				sourceOfWsdl = "false";
+			}
 			System.out.println("Config Info From Input:\n");
 			System.out.println("ProjectName: "+ projectName);
 			System.out.println("port: " + port);
@@ -45,10 +65,14 @@ public class BuildTools {
 					File front = new File(projectName + "/" + projectName + "Front");
 					front.mkdirs();
 					
+					File src = new File(projectName + "/" + projectName + "/src/main/java");
+					src.mkdirs();
+					
 					File resources = new File(projectName + "/" + projectName + "/src/main/resources");
 					resources.mkdirs();
+					
 					List<String> strings = splitByUpperCase(projectName);
-					String javaPath = projectName + "/" + projectName + "/src/main/java/com/";
+					String javaPath = projectName + "/" + projectName + "/src/main/java/com";
 					for (String string : strings) {
 						javaPath = javaPath + "/" + string.toLowerCase();
 					}
@@ -72,31 +96,85 @@ public class BuildTools {
 				System.out.println();
 				
 				System.out.println("\tPreparing to write file!");
-					
+
 					write(type.getBase64JS(), front + "/jquery.base64.js");
 					write(type.getRequestJS(projectName, port), front + "/request.js");
 					write(type.getHtml(projectName, author), front + "/index.html");
 				
-					write(type.getPom(projectName), projectName + "/" + projectName + "/pom.xml");
-				
+					String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
+					
 					write(type.getConfig(port), resources.getPath() + "/application-default.yml");
 				
-					write(type.getApplication(projectName, author), project.getPath() + "/" + projectName + "Application.java");
+					write(type.getApplication(projectName, packageName, author), project.getPath() + "/" + projectName + "Application.java");
 				
-					write(type.getUtils(projectName, author), utils.getPath() + "/" + projectName + "Utils.java");
+					write(type.getUtils(projectName, packageName, author), utils.getPath() + "/" + projectName + "Utils.java");
 				
-					write(type.getService(projectName, author), service.getParentFile().getPath() + "/" + projectName + "Service.java");
-					write(type.getServiceImpl(projectName, author), service.getPath() + "/" + projectName + "ServiceImpl.java");
+					write(type.getService(projectName, packageName, author), service.getParentFile().getPath() + "/" + projectName + "Service.java");
+					write(type.getServiceImpl(projectName, packageName, author), service.getPath() + "/" + projectName + "ServiceImpl.java");
 				
-					write(type.getMapping(projectName, author), mapping.getPath() + "/" + projectName + "Mapping.java");
+					write(type.getMapping(projectName, packageName, author), mapping.getPath() + "/" + projectName + "Mapping.java");
 				
-					write(type.getResponse(projectName, author), core.getPath() + "/Response.java");
-					write(type.getResponseCode(projectName, author), core.getPath() + "/ResponseCode.java");
-					write(type.getResponseGenerator(projectName, author), core.getPath() + "/ResponseGenerator.java");
+					write(type.getResponse(projectName, packageName, author), core.getPath() + "/Response.java");
+					write(type.getResponseCode(projectName, packageName, author), core.getPath() + "/ResponseCode.java");
+					write(type.getResponseGenerator(projectName, packageName, author), core.getPath() + "/ResponseGenerator.java");
 				
-					write(type.getController(projectName, author), controller.getPath() + "/" + projectName + "Controller.java");
+					write(type.getController(projectName, packageName, author), controller.getPath() + "/" + projectName + "Controller.java");
 					
-					write(type.getRestTemplate(projectName, author), config.getPath() + "/RestTemplateConfig.java");
+					write(type.getRestTemplate(projectName, packageName, author), config.getPath() + "/RestTemplateConfig.java");
+					
+					String[] jarPacks = null;
+					if (!BuildUtils.isEmpty(wsdls)) {
+						File libs = null;
+						if (sourceOfWsdl.equals("false")) {
+							libs = new File(resources.getPath() + "/lib");
+							libs.mkdirs();
+						}
+						StringBuffer command = new StringBuffer();
+						jarPacks = new String[wsdls.length];
+						for (int i = 0; i < jarPacks.length; i++) {
+							if (!BuildUtils.isEmpty(wsdls[i])) {
+								String target = wsdls[i];
+								if (wsdls[i].startsWith("http") || wsdls[i].endsWith("?wsdl")) {
+									wsdls[i] = wsdls[i].substring(wsdls[i].lastIndexOf("/") + 1, wsdls[i].length() - 5);
+									if (wsdls[i].contains(".")) {
+										jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].indexOf("."))));
+									} else {
+										jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i]));
+									}
+								} else {
+									jarPacks[i] = "org.".concat(BuildUtils.splitByUpperCaseAndAddDot(wsdls[i].substring(0, wsdls[i].length() - 4)));
+								}
+								if (sourceOfWsdl.equals("true")) {
+									command.append("wsimport -Xnocompile -s ").append(src.getAbsolutePath()).append(" -p ").append(jarPacks[i]).append(" -encoding UTF-8 -keep ").append(target);
+								} else {
+									command.append("wsimport -p ").append(jarPacks[i]).append(" -encoding UTF-8 -keep ").append(target);
+									command.append("\n");
+									command.append("jar cvf ").append(jarPacks[i].replaceAll("\\.", "-")).append(".jar org");
+									command.append("\n");
+									command.append("rd/s/q org");
+									command.append("\n");
+									command.append("move ").append(jarPacks[i].replaceAll("\\.", "-")).append(".jar ").append(libs.getAbsolutePath());
+								}
+								command.append("\n");
+							}
+						}
+						try {
+							//command.append("\n");
+							//command.append("exit");
+							write(command.toString(), "command.bat");
+							Runtime runtime = Runtime.getRuntime();
+							Process process = runtime.exec("cmd /c command.bat & del command.bat");//rd/f/s/q command.bat
+							StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), "ERROR");
+							errorGobbler.start();
+							StreamGobbler outGobbler = new StreamGobbler(process.getInputStream(), "STDOUT");
+							outGobbler.start();
+							process.waitFor();
+							process.destroy();
+							process = null;
+						} catch(Exception e) {
+						}
+					}
+					write(type.getPom(projectName, packageName, jarPacks, sourceOfWsdl.equals("true")), projectName + "/" + projectName + "/pom.xml");
 					
 				System.out.println("\tFiles was Finished!");
 					
