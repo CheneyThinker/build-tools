@@ -44,14 +44,14 @@ public class BuildTools {
 					Container container = jFrame.getContentPane();
 					container.setLayout(null);
 					
-					String[] items = {"projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "model:", "build"};
-					String[] tips = {"CheneyThinker", "9527", "CheneyThinker", "Example:cheney-thinker-1.0$tea-1.0", "Example:cheney.xml$tea.xml", "false,true", "simpliy,common"};
+					String[] items = {"projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "model:", "personal:", "build"};
+					String[] tips = {"CheneyThinker", "9527", "CheneyThinker", "Example:cheney-thinker-1.0$tea-1.0", "Example:cheney.xml$tea.xml", "false,true", "simpliy,common", "false,true"};
 					
 					int width = 500;
 					int height = ((items.length + 1) * 40) + ((items.length + 2) * 5);
 					JLabel[] jLabels = new JLabel[items.length - 1];
-					JTextField[] jTextFields = new JTextField[items.length - 3];
-					for (int i = 0, j = items.length - 3; i < j; i++) {
+					JTextField[] jTextFields = new JTextField[items.length - 4];
+					for (int i = 0, j = items.length - 4; i < j; i++) {
 						jLabels[i] = new JLabel(items[i]);
 						jLabels[i].setBounds(5, i * 40 + 5 * (i + 1), 135, 40);
 						container.add(jLabels[i]);
@@ -59,7 +59,7 @@ public class BuildTools {
 						jTextFields[i].setBounds(140, i * 40 + 5 * (i + 1), 350, 40);
 						container.add(jTextFields[i]);
 					}
-					int i = items.length - 3, j = items.length - 1;
+					int i = items.length - 4, j = items.length - 1;
 					JComboBox<?>[] jComboBoxs = new JComboBox<?>[j - i];
 					for (int k = 0; i < j; i++, k++) {
 						jLabels[i] = new JLabel(items[i]);
@@ -81,6 +81,7 @@ public class BuildTools {
 								String wsdl = jTextFields[4].getText();
 								String sourceOfWsdl = jComboBoxs[0].getSelectedItem().toString();
 								String model = jComboBoxs[1].getSelectedItem().toString();
+								String personal = jComboBoxs[2].getSelectedItem().toString();
 								BuildType type = new BuildType();
 								if (outerJar.equals("Example:cheney-thinker-1.0$tea-1.0") || BuildUtils.isEmpty(outerJar)) {
 									outerJar = null;
@@ -161,20 +162,20 @@ public class BuildTools {
 									
 										String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
 										
-										write(type.getConfig(port), resources.getPath() + "/application-default.yml");
+										write(type.getConfig(port, projectName, model.equals("simpliy"), personal.equals("false")), resources.getPath() + "/application-default.yml");
 									
 										write(type.getApplication(projectName, packageName, author), project.getPath() + "/" + projectName + "Application.java");
 									
-										write(type.getUtils(projectName, packageName, author, model.equals("simpliy")), utils.getPath() + "/" + projectName + "Utils.java");
+										write(type.getUtils(projectName, packageName, author, model.equals("simpliy"), personal.equals("false")), utils.getPath() + "/" + projectName + "Utils.java");
 									
-										write(type.getService(projectName, packageName, author, model.equals("simpliy")), service.getPath() + "/" + projectName + "Service.java");
+										write(type.getService(projectName, packageName, author, model.equals("simpliy"), personal.equals("false")), service.getPath() + "/" + projectName + "Service.java");
 										if (!model.equals("simpliy")) {
 											File impl = new File(service.getPath() + "/impl");
 											impl.mkdirs();
-											write(type.getServiceImpl(projectName, packageName, author), impl.getPath() + "/" + projectName + "ServiceImpl.java");
+											write(type.getServiceImpl(projectName, packageName, author, personal.equals("false")), impl.getPath() + "/" + projectName + "ServiceImpl.java");
 										}
 										
-										write(type.getFilter(projectName, packageName, author), filter.getPath() + "/" + projectName + "Filter.java");
+										write(type.getFilter(projectName, packageName, author, personal.equals("false")), filter.getPath() + "/" + projectName + "Filter.java");
 									
 										write(type.getMapping(projectName, packageName, author, model.equals("simpliy")), mapping.getPath() + "/" + projectName + "Mapping.java");
 									
@@ -185,6 +186,9 @@ public class BuildTools {
 										write(type.getController(projectName, packageName, author, model.equals("simpliy")), controller.getPath() + "/" + projectName + "Controller.java");
 										
 										write(type.getRestTemplate(projectName, packageName, author), config.getPath() + "/RestTemplateConfig.java");
+										if (personal.equals("false")) {
+											write(type.getYMLConfig(projectName, packageName, author), config.getPath() + "/" + projectName + "YMLConfig.java");
+										}
 
 										StringBuffer command = null;
 										String[] outerJars = null;
@@ -259,7 +263,7 @@ public class BuildTools {
 											} catch(Exception ex) {
 											}
 										}
-										write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true")), projectName + "/" + projectName + "/pom.xml");
+										write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true"), personal.equals("false")), projectName + "/" + projectName + "/pom.xml");
 										
 									System.out.println("\tFiles was Finished!");
 										
