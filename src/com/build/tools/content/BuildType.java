@@ -386,7 +386,7 @@ public class BuildType {
 					builder	.append("  @RequestMapping(\"/index\")\n")
 							.append("  public Response index(HttpServletRequest request) {\n")
 							.append("    try {\n")
-							.append("      return ResponseGenerator.genYes(service.index(request.getParameter(\"data\")));\n")
+							.append("      return ResponseGenerator.genYes(service.index(request.getAttribute(\"data\")));\n")
 							.append("    } catch (Exception e) {\n")
 							.append("      return ResponseGenerator.genNo(logger, e, ").append(projectName).append("Mapping.INDEX);\n")
 							.append("    }\n")
@@ -582,7 +582,7 @@ public class BuildType {
 					.append("    return map;\n")
 					.append("  }\n");
 		} else {
-			builder	.append("  Map<String, Object> index(String json) throws Exception;\n");
+			builder	.append("  Map<String, Object> index(Object object) throws Exception;\n");
 		}
 		builder	.append("\n")
 				.append("}");
@@ -612,8 +612,8 @@ public class BuildType {
 				.append("  @Autowired\n")
 				.append("  private RestTemplate restTemplate;\n")
 				.append("\n")
-				.append("  public Map<String, Object> index(String json) throws Exception {\n")
-				.append("    Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(json);\n")
+				.append("  public Map<String, Object> index(Object object) throws Exception {\n")
+				.append("    Map<String, Object> map = (Map<String, Object>) object;\n")
 				.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
 				.append("    map.put(\"version\", \"PRO\");\n")
 				.append("    map.put(\"major\", \"1.0\");\n")
