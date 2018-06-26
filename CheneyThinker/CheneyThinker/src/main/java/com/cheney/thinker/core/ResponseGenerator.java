@@ -1,13 +1,13 @@
-package com.weather.core;
+package com.cheney.thinker.core;
 
-import com.weather.mapping.WeatherMapping;
+import com.cheney.thinker.mapping.CheneyThinkerMapping;
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
 /**
  * @description Generator of Response
  * @author CheneyThinker
- * @date 2018-06-25
+ * @date 2018-06-26
  */
 public final class ResponseGenerator {
 
@@ -25,18 +25,19 @@ public final class ResponseGenerator {
             .setData(data);
   }
 
-  public static Response genNo(Logger logger, Exception e, WeatherMapping mapping) {
-    StackTraceElement[] elements = e.getStackTrace();
+  public static Response genNo(Logger logger, Exception e, CheneyThinkerMapping mapping) {
+    StackTraceElement[] elements = e.getCause().getStackTrace();
     for (int i = elements.length - 1; i >= 0; i--) {
       StackTraceElement element = elements[i];
-      logger.error(format, element.getClassName(), element.getMethodName(), element.getLineNumber());
+      if (element.toString().startsWith("com.cheney.thinker"))
+        logger.error(format, element.getClassName(), element.getMethodName(), element.getLineNumber());
     }
     return new Response()
             .setCode(ResponseCode.NO)
-            .setMsg(StringUtils.isEmpty(e.getMessage()) ? mapping.getContent() : e.getMessage());
+            .setMsg(StringUtils.isEmpty(e.getCause()) ? mapping.getContent() : StringUtils.isEmpty(e.getCause().getMessage()) ? mapping.getContent() : e.getCause().getMessage());
   }
 
-  public static Response genNo(Logger logger, Object data, Exception e, WeatherMapping mapping) {
+  public static Response genNo(Logger logger, Object data, Exception e, CheneyThinkerMapping mapping) {
     return genNo(logger, e, mapping)
             .setData(data);
   }

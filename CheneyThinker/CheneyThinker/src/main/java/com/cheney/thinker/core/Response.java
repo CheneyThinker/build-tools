@@ -1,11 +1,11 @@
-package com.weather.core;
+package com.cheney.thinker.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @description Entity of Response
  * @author CheneyThinker
- * @date 2018-06-25
+ * @date 2018-06-26
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {

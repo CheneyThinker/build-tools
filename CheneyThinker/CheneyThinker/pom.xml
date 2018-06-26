@@ -4,8 +4,8 @@
      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.weather</groupId>
-  <artifactId>Weather</artifactId>
+  <groupId>com.cheney.thinker</groupId>
+  <artifactId>CheneyThinker</artifactId>
   <version>1.0-PRO</version>
 
   <parent>
@@ -26,13 +26,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.weather.web.service</groupId>
-      <artifactId>org-weather-web-service</artifactId>
-      <version>1.0</version>
-      <scope>system</scope>
-      <systemPath>${pom.basedir}/src/main/resources/lib/org-weather-web-service.jar</systemPath>
-    </dependency>
   </dependencies>
 
   <build>
@@ -40,10 +33,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <fork>true</fork>
-          <includeSystemScope>true</includeSystemScope>
-        </configuration>
       </plugin>
     </plugins>
   </build>

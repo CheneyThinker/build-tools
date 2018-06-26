@@ -23,6 +23,7 @@ public class BuildTools {
 		{
 			String projectName = null;
 			String port = null;
+			String model = null;
 			String author = null;
 			String outerJar = null;
 			String wsdl = null;
@@ -40,26 +41,32 @@ public class BuildTools {
 				port = "9527";
 			}
 			try {
-				outerJar = args[2];
+				model = args[2].toLowerCase();
+			} catch (Exception e) {
+				model = "simpliy";
+			}
+			try {
+				outerJar = args[3];
 			} catch (Exception e) {
 			}
 			try {
-				author = args[3];
+				author = args[4];
 			} catch (Exception e) {
 				author = "CheneyThinker";
 			}
 			try {
-				wsdl = args[4];
+				wsdl = args[5];
 			} catch (Exception e) {
 			}
 			try {
-				sourceOfWsdl = args[5];
+				sourceOfWsdl = args[6].toLowerCase();
 			} catch (Exception e) {
 				sourceOfWsdl = "false";
 			}
 			System.out.println("Config Info From Input:\n");
 			System.out.println("ProjectName: "+ projectName);
 			System.out.println("port: " + port);
+			System.out.println("model: " + model);
 			System.out.println("outerJar: " + outerJar);
 			System.out.println("author: " + author);
 			System.out.println("wsdl: " + wsdl);
@@ -93,10 +100,12 @@ public class BuildTools {
 					core.mkdirs();
 					File controller = new File(project.getPath() + "/controller");
 					controller.mkdirs();
-					File service = new File(project.getPath() + "/service/impl");
+					File service = new File(project.getPath() + "/service");
 					service.mkdirs();
 					File config = new File(project.getPath() + "/config");
 					config.mkdirs();
+					File filter = new File(project.getPath() + "/filter");
+					filter.mkdirs();
 					
 				System.out.println("\tDirectory build Finished!");
 
@@ -105,8 +114,8 @@ public class BuildTools {
 				System.out.println("\tPreparing to write file!");
 
 					write(type.getBase64JS(), front + "/jquery.base64.js");
-					write(type.getRequestJS(projectName, port), front + "/request.js");
-					write(type.getHtml(projectName, author), front + "/index.html");
+					write(type.getRequestJS(projectName, port, model.equals("simpliy")), front + "/request.js");
+					write(type.getHtml(projectName, author, model.equals("simpliy")), front + "/index.html");
 				
 					String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
 					
@@ -114,18 +123,24 @@ public class BuildTools {
 				
 					write(type.getApplication(projectName, packageName, author), project.getPath() + "/" + projectName + "Application.java");
 				
-					write(type.getUtils(projectName, packageName, author), utils.getPath() + "/" + projectName + "Utils.java");
+					write(type.getUtils(projectName, packageName, author, model.equals("simpliy")), utils.getPath() + "/" + projectName + "Utils.java");
 				
-					write(type.getService(projectName, packageName, author), service.getParentFile().getPath() + "/" + projectName + "Service.java");
-					write(type.getServiceImpl(projectName, packageName, author), service.getPath() + "/" + projectName + "ServiceImpl.java");
+					write(type.getService(projectName, packageName, author, model.equals("simpliy")), service.getPath() + "/" + projectName + "Service.java");
+					if (!model.equals("simpliy")) {
+						File impl = new File(service.getPath() + "/impl");
+						impl.mkdirs();
+						write(type.getServiceImpl(projectName, packageName, author), impl.getPath() + "/" + projectName + "ServiceImpl.java");
+					}
+					
+					write(type.getFilter(projectName, packageName, author), filter.getPath() + "/" + projectName + "Filter.java");
 				
-					write(type.getMapping(projectName, packageName, author), mapping.getPath() + "/" + projectName + "Mapping.java");
+					write(type.getMapping(projectName, packageName, author, model.equals("simpliy")), mapping.getPath() + "/" + projectName + "Mapping.java");
 				
 					write(type.getResponse(projectName, packageName, author), core.getPath() + "/Response.java");
 					write(type.getResponseCode(projectName, packageName, author), core.getPath() + "/ResponseCode.java");
 					write(type.getResponseGenerator(projectName, packageName, author), core.getPath() + "/ResponseGenerator.java");
 				
-					write(type.getController(projectName, packageName, author), controller.getPath() + "/" + projectName + "Controller.java");
+					write(type.getController(projectName, packageName, author, model.equals("simpliy")), controller.getPath() + "/" + projectName + "Controller.java");
 					
 					write(type.getRestTemplate(projectName, packageName, author), config.getPath() + "/RestTemplateConfig.java");
 

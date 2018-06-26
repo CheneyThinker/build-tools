@@ -1,4 +1,4 @@
-package com.weather.config;
+package com.cheney.thinker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @description
  * @author CheneyThinker
- * @date 2018-06-25
+ * @date 2018-06-26
  */
 @Configuration
 public class RestTemplateConfig {

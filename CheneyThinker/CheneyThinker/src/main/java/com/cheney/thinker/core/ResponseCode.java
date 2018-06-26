@@ -1,9 +1,9 @@
-package com.weather.core;
+package com.cheney.thinker.core;
 
 /**
  * @description Code of Response
  * @author CheneyThinker
- * @date 2018-06-25
+ * @date 2018-06-26
  */
 public enum ResponseCode {
 

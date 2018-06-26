@@ -99,7 +99,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getRequestJS(String projectName, String port) {
+	public String getRequestJS(String projectName, String port, boolean model) {
 		clear();
 		String ip = null;
 		try {
@@ -109,9 +109,9 @@ public class BuildType {
 		}
 		builder	.append("$.base64.utf8encode = true\n")
 				.append("\n")
-				.append("function postAndGet(type, handler, data, success, error) {\n")
+				.append("function postAndGet(type").append(model ? "" : ", handler").append(", data, success, error) {\n")
 				.append("  $.ajax({\n")
-				.append("    url : 'http://").append(ip).append(":").append(port).append("/").append(projectName).append("/' + handler,\n")
+				.append("    url : 'http://").append(ip).append(":").append(port).append("/").append(projectName).append(model ? "/invoke',\n" : "/' + handler,\n")
 				.append("    type : type,\n")
 				.append("    data : data,\n")
 				.append("    dataType : 'json'\n")
@@ -128,33 +128,33 @@ public class BuildType {
 				.append("  })\n")
 				.append("}\n")
 				.append("\n")
-				.append("function post(handler, data, success, error) {\n")
-				.append("  postAndGet('POST', handler, data, success, error)\n")
+				.append("function post(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  postAndGet('POST', ").append(model ? "" : "handler, ").append("data, success, error)\n")
 				.append("}\n")
 				.append("\n")
-				.append("function postJson(handler, data, success, error) {\n")
-				.append("  post(handler, {data: JSON.stringify(data)}, success, error)\n")
+				.append("function postJson(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  post(").append(model ? "" : "handler, ").append("{data: JSON.stringify(data)}, success, error)\n")
 				.append("}\n")
 				.append("\n")
-				.append("function postBase64Json(handler, data, success, error) {\n")
-				.append("  post(handler, {data: $.base64.btoa(JSON.stringify(data))}, success, error)\n")
+				.append("function postBase64Json(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  post(").append(model ? "" : "handler, ").append("{data: $.base64.btoa(JSON.stringify(data))}, success, error)\n")
 				.append("}\n")
 				.append("\n")
-				.append("function get(handler, data, success, error) {\n")
-				.append("  postAndGet('GET', handler, data, success, error)\n")
+				.append("function get(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  postAndGet('GET', ").append(model ? "" : "handler, ").append("data, success, error)\n")
 				.append("}\n")
 				.append("\n")
-				.append("function getJson(handler, data, success, error) {\n")
-				.append("  get(handler, {data: JSON.stringify(data)}, success, error)\n")
+				.append("function getJson(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  get(").append(model ? "" : "handler, ").append("{data: JSON.stringify(data)}, success, error)\n")
 				.append("}\n")
 				.append("\n")
-				.append("function getBase64Json(handler, data, success, error) {\n")
-				.append("  get(handler, {data: $.base64.btoa(JSON.stringify(data))}, success, error)\n")
+				.append("function getBase64Json(").append(model ? "" : "handler, ").append("data, success, error) {\n")
+				.append("  get(").append(model ? "" : "handler, ").append("{data: $.base64.btoa(JSON.stringify(data))}, success, error)\n")
 				.append("}\n");
 		return builder.toString();
 	}
 	
-	public String getHtml(String projectName, String author) {
+	public String getHtml(String projectName, String author, boolean model) {
 		clear();
 		builder	.append("<html>\n")
 				.append("  <head>\n")
@@ -190,10 +190,15 @@ public class BuildType {
 				.append("    $(\n")
 				.append("      function() {\n")
 				.append("        postBase64Json\n")
-				.append("        (\n")
-				.append("          'index',\n")
-				.append("          {\n")
-				.append("            author: '").append(author).append("'\n")
+				.append("        (\n");
+		if (model) {
+			builder	.append("          {\n")
+					.append("            method: 'index',\n");
+		} else {
+			builder	.append("          'index',\n")
+					.append("          {\n");
+		}
+		builder	.append("            author: '").append(author).append("'\n")
 				.append("          },\n")
 				.append("          function(data) {\n")
 				.append("            for(var key in data) {\n")
@@ -295,17 +300,19 @@ public class BuildType {
 				.append("\n")
 				.append("import org.springframework.boot.SpringApplication;\n")
 				.append("import org.springframework.boot.autoconfigure.SpringBootApplication;\n")
+				.append("import org.springframework.boot.web.servlet.ServletComponentScan;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
 				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
+				.append("@ServletComponentScan\n")
 				.append("@SpringBootApplication\n")
-				.append("public class ").append(firstUpperCase(projectName)).append("Application {\n")
+				.append("public class ").append(projectName).append("Application {\n")
 				.append("\n")
 				.append("  public static void main(String[] args) {\n")
-				.append("    SpringApplication.run(").append(firstUpperCase(projectName)).append("Application.class, args);\n")
+				.append("    SpringApplication.run(").append(projectName).append("Application.class, args);\n")
 				.append("    StringBuilder builder = new StringBuilder(\"\\n\");\n");
 		int len = projectName.length() + 6 + "Application is Running!".length();
 		StringBuilder temp = new StringBuilder();
@@ -322,7 +329,7 @@ public class BuildType {
 		String space = temp.toString();
 		builder	.append("    builder.append(\"|").append(space).append("|\\n\");\n")
 				.append("    builder.append(\"|").append(space).append("|\\n\");\n")
-				.append("    builder.append(\"|   ").append(firstUpperCase(projectName)).append("Application is Running!   |\\n\");\n")
+				.append("    builder.append(\"|   ").append(projectName).append("Application is Running!   |\\n\");\n")
 				.append("    builder.append(\"|").append(space).append("|\\n\");\n")
 				.append("    builder.append(\"|").append(space).append("|\\n\");\n")
 				.append("    builder.append(\"").append(dotLine).append("\\n\");\n")
@@ -333,14 +340,15 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getController(String projectName, String packageName, String author) {
+	public String getController(String projectName, String packageName, String author, boolean model) {
 		clear();
 		builder	.append("package com.").append(packageName).append(".controller;\n")
 				.append("\n")
 				.append("import com.").append(packageName).append(".core.Response;\n")
 				.append("import com.").append(packageName).append(".core.ResponseGenerator;\n")
-				.append("import com.").append(packageName).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
-				.append("import com.").append(packageName).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
+				.append("import com.").append(packageName).append(".mapping.").append(projectName).append("Mapping;\n")
+				.append("import com.").append(packageName).append(".service.").append(projectName).append("Service;\n")
+				.append(model ? "import com.".concat(packageName).concat(".utils.").concat(projectName).concat("Utils;\n") : "")
 				.append("import org.slf4j.Logger;\n")
 				.append("import org.slf4j.LoggerFactory;\n")
 				.append("\n")
@@ -357,24 +365,35 @@ public class BuildType {
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@RestController\n")
-				.append("@RequestMapping(\"/").append(firstUpperCase(projectName)).append("\")\n")
+				.append("@RequestMapping(\"/").append(projectName).append("\")\n")
 				.append("@CrossOrigin(maxAge = 3600, origins = \"*\")\n")
-				.append("public class ").append(firstUpperCase(projectName)).append("Controller {\n")
+				.append("public class ").append(projectName).append("Controller {\n")
 				.append("\n")
 				.append("  @Autowired\n")
-				.append("  private ").append(firstUpperCase(projectName)).append("Service service;\n")
-				.append("  private Logger logger = LoggerFactory.getLogger(").append(firstUpperCase(projectName)).append("Controller.class);\n")
-				.append("\n")
-				.append("  @RequestMapping(\"/index\")\n")
-				.append("  public Response index(HttpServletRequest request) {\n")
-				.append("    try {\n")
-				.append("      return ResponseGenerator.genYes(service.index(request.getParameter(\"data\")));\n")
-				.append("    } catch (Exception e) {\n")
-				.append("      return ResponseGenerator.genNo(logger, e, ").append(firstUpperCase(projectName)).append("Mapping.INDEX);\n")
-				.append("    }\n")
-				.append("  }\n")
-				.append("\n")
-				.append("}");
+				.append("  private ").append(projectName).append("Service service;\n")
+				.append("  private Logger logger = LoggerFactory.getLogger(").append(projectName).append("Controller.class);\n")
+				.append("\n");
+				if (model) {
+					builder	.append("  @RequestMapping(\"/invoke\")\n")
+							.append("  public Response invoke(HttpServletRequest request) {\n")
+							.append("    try {\n")
+							.append("      return ResponseGenerator.genYes(").append(projectName).append("Utils.invoke(request.getAttribute(\"data\"), service));\n")
+							.append("    } catch (Exception e) {\n")
+							.append("      return ResponseGenerator.genNo(logger, e, ").append(projectName).append("Mapping.INVOKE);\n")
+							.append("    }\n")
+							.append("  }\n");
+				} else {
+					builder	.append("  @RequestMapping(\"/index\")\n")
+							.append("  public Response index(HttpServletRequest request) {\n")
+							.append("    try {\n")
+							.append("      return ResponseGenerator.genYes(service.index(request.getParameter(\"data\")));\n")
+							.append("    } catch (Exception e) {\n")
+							.append("      return ResponseGenerator.genNo(logger, e, ").append(projectName).append("Mapping.INDEX);\n")
+							.append("    }\n")
+							.append("  }\n");
+				}
+				builder	.append("\n")
+						.append("}");
 		return builder.toString();
 	}
 	
@@ -459,7 +478,7 @@ public class BuildType {
 		clear();
 		builder	.append("package com.").append(packageName).append(".core;\n")
 				.append("\n")
-				.append("import com.").append(packageName).append(".mapping.").append(firstUpperCase(projectName)).append("Mapping;\n")
+				.append("import com.").append(packageName).append(".mapping.").append(projectName).append("Mapping;\n")
 				.append("import org.slf4j.Logger;\n")
 				.append("import org.springframework.util.StringUtils;\n")
 				.append("\n")
@@ -484,18 +503,19 @@ public class BuildType {
 				.append("            .setData(data);\n")
 				.append("  }\n")
 				.append("\n")
-				.append("  public static Response genNo(Logger logger, Exception e, ").append(firstUpperCase(projectName)).append("Mapping mapping) {\n")
-				.append("    StackTraceElement[] elements = e.getStackTrace();\n")
+				.append("  public static Response genNo(Logger logger, Exception e, ").append(projectName).append("Mapping mapping) {\n")
+				.append("    StackTraceElement[] elements = e.getCause().getStackTrace();\n")
 				.append("    for (int i = elements.length - 1; i >= 0; i--) {\n")
 				.append("      StackTraceElement element = elements[i];\n")
-				.append("      logger.error(format, element.getClassName(), element.getMethodName(), element.getLineNumber());\n")
+				.append("      if (element.toString().startsWith(\"com.").append(packageName).append("\"))\n")
+				.append("        logger.error(format, element.getClassName(), element.getMethodName(), element.getLineNumber());\n")
 				.append("    }\n")
 				.append("    return new Response()\n")
 				.append("            .setCode(ResponseCode.NO)\n")
-				.append("            .setMsg(StringUtils.isEmpty(e.getMessage()) ? mapping.getContent() : e.getMessage());\n")
+				.append("            .setMsg(StringUtils.isEmpty(e.getCause()) ? mapping.getContent() : StringUtils.isEmpty(e.getCause().getMessage()) ? mapping.getContent() : e.getCause().getMessage());\n")
 				.append("  }\n")
 				.append("\n")
-				.append("  public static Response genNo(Logger logger, Object data, Exception e, ").append(firstUpperCase(projectName)).append("Mapping mapping) {\n")
+				.append("  public static Response genNo(Logger logger, Object data, Exception e, ").append(projectName).append("Mapping mapping) {\n")
 				.append("    return genNo(logger, e, mapping)\n")
 				.append("            .setData(data);\n")
 				.append("  }\n")
@@ -504,7 +524,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getMapping(String projectName, String packageName, String author) {
+	public String getMapping(String projectName, String packageName, String author, boolean model) {
 		clear();
 		builder	.append("package com.").append(packageName).append(".mapping;\n")
 				.append("\n")
@@ -513,13 +533,13 @@ public class BuildType {
 				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
-				.append("public enum ").append(firstUpperCase(projectName)).append("Mapping {\n")
+				.append("public enum ").append(projectName).append("Mapping {\n")
 				.append("\n")
-				.append("  INDEX(\"Call index fail!\");\n")
+				.append(model ? "  INVOKE(\"Invocation invoke fail!\");\n" : "  INDEX(\"Invocation index fail!\");\n")
 				.append("\n")
 				.append("  final String content;\n")
 				.append("\n")
-				.append("  ").append(firstUpperCase(projectName)).append("Mapping(final String content) {\n")
+				.append("  ").append(projectName).append("Mapping(final String content) {\n")
 				.append("    this.content = content;\n")
 				.append("  }\n")
 				.append("\n")
@@ -531,21 +551,40 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getService(String projectName, String packageName, String author) {
+	public String getService(String projectName, String packageName, String author, boolean model) {
 		clear();
 		builder	.append("package com.").append(packageName).append(".service;\n")
-				.append("\n")
-				.append("import java.util.Map;\n")
+				.append("\n");
+		if (model) {
+			builder	.append("import org.springframework.beans.factory.annotation.Autowired;\n")
+					.append("import org.springframework.stereotype.Service;\n")
+					.append("import org.springframework.web.client.RestTemplate;\n")
+					.append("\n");
+		}
+		builder	.append("import java.util.Map;\n")
 				.append("\n")
 				.append("/**\n")
 				.append(" * @description\n")
 				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
-				.append("public interface ").append(firstUpperCase(projectName)).append("Service {\n")
-				.append("\n")
-				.append("  Map<String, Object> index(String json) throws Exception;\n")
-				.append("\n")
+				.append(model ? "@Service\n" : "")
+				.append("public ").append(model ? "class" : "interface").append(" ").append(projectName).append("Service {\n")
+				.append("\n");
+		if (model) {
+			builder	.append("  @Autowired\n")
+					.append("  private RestTemplate restTemplate;\n")
+					.append("\n")
+					.append("  public Map<String, Object> index(Map<String, Object> map) throws Exception {\n")
+					.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
+					.append("    map.put(\"version\", \"PRO\");\n")
+					.append("    map.put(\"major\", \"1.0\");\n")
+					.append("    return map;\n")
+					.append("  }\n");
+		} else {
+			builder	.append("  Map<String, Object> index(String json) throws Exception;\n");
+		}
+		builder	.append("\n")
 				.append("}");
 		return builder.toString();
 	}
@@ -554,8 +593,8 @@ public class BuildType {
 		clear();
 		builder	.append("package com.").append(packageName).append(".service.impl;\n")
 				.append("\n")
-				.append("import com.").append(packageName).append(".service.").append(firstUpperCase(projectName)).append("Service;\n")
-				.append("import com.").append(packageName).append(".utils.").append(firstUpperCase(projectName)).append("Utils;\n")
+				.append("import com.").append(packageName).append(".service.").append(projectName).append("Service;\n")
+				.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
 				.append("import org.springframework.beans.factory.annotation.Autowired;\n")
 				.append("import org.springframework.stereotype.Service;\n")
 				.append("import org.springframework.web.client.RestTemplate;\n")
@@ -568,14 +607,14 @@ public class BuildType {
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
 				.append("@Service\n")
-				.append("public class ").append(firstUpperCase(projectName)).append("ServiceImpl implements ").append(firstUpperCase(projectName)).append("Service {\n")
+				.append("public class ").append(projectName).append("ServiceImpl implements ").append(projectName).append("Service {\n")
 				.append("\n")
 				.append("  @Autowired\n")
 				.append("  private RestTemplate restTemplate;\n")
 				.append("\n")
 				.append("  public Map<String, Object> index(String json) throws Exception {\n")
-				.append("    Map<String, Object> map = ").append(firstUpperCase(projectName)).append("Utils.getMapFromBase64(json);\n")
-				.append("    map.put(\"projectName\", \"").append(firstUpperCase(projectName)).append("\");\n")
+				.append("    Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(json);\n")
+				.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
 				.append("    map.put(\"version\", \"PRO\");\n")
 				.append("    map.put(\"major\", \"1.0\");\n")
 				.append("    return map;\n")
@@ -585,7 +624,48 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getUtils(String projectName, String packageName, String author) {
+	public String getFilter(String projectName, String packageName, String author) {
+		clear();
+		builder	.append("package com.").append(packageName).append(".filter;\n")
+				.append("\n")
+				.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
+				.append("\n")
+				.append("import javax.servlet.*;\n")
+				.append("import javax.servlet.annotation.WebFilter;\n")
+				.append("import javax.servlet.http.HttpServletRequest;\n")
+				.append("import javax.servlet.http.HttpServletResponse;\n")
+				.append("import java.util.Map;\n")
+				.append("\n")
+				.append("/**\n")
+				.append(" * @description\n")
+				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
+				.append(" * @date ").append(date).append("\n")
+				.append(" */\n")
+				.append("@WebFilter(\"/").append(projectName).append("/*\")\n")
+				.append("public class ").append(projectName).append("Filter implements Filter {\n")
+				.append("\n")
+				.append("  public void init(FilterConfig filterConfig) {\n")
+				.append("  }\n")
+				.append("\n")
+				.append("  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {\n")
+				.append("    try {\n")
+				.append("      HttpServletRequest request = (HttpServletRequest) servletRequest;\n")
+				.append("      HttpServletResponse response = (HttpServletResponse) servletResponse;\n")
+				.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(request.getParameter(\"data\"));\n")
+				.append("      request.setAttribute(\"data\", map);\n")
+				.append("      filterChain.doFilter(request, response);\n")
+				.append("    } catch (Exception e) {\n")
+				.append("    }\n")
+				.append("  }\n")
+				.append("\n")
+				.append("  public void destroy() {\n")
+				.append("  }\n")
+				.append("\n")
+				.append("}");
+		return builder.toString();
+	}
+	
+	public String getUtils(String projectName, String packageName, String author, boolean model) {
 		clear();
 		builder	.append("package com.").append(packageName).append(".utils;\n")
 				.append("\n")
@@ -598,6 +678,7 @@ public class BuildType {
 				.append("import org.springframework.util.StringUtils;\n")
 				.append("import org.springframework.web.client.RestTemplate;\n")
 				.append("\n")
+				.append("import java.lang.reflect.Method;\n")
 				.append("import java.util.Base64;\n")
 				.append("import java.util.Map;\n")
 				.append("\n")
@@ -610,11 +691,19 @@ public class BuildType {
 				.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
 				.append(" * @date ").append(date).append("\n")
 				.append(" */\n")
-				.append("public final class ").append(firstUpperCase(projectName)).append("Utils {\n")
+				.append("public final class ").append(projectName).append("Utils {\n")
 				.append("\n")
 				.append("  private static ObjectMapper mapper = new ObjectMapper();\n")
-				.append("\n")
-				.append("  public static <T> T getEntity(String json, Class<T> clazz) throws Exception {\n")
+				.append("\n");
+		if (model) {
+			builder .append("  public static Object invoke(Object data, Object service) throws Exception {\n")
+					.append("    Map<String, Object> map = (Map<String, Object>) data;\n")
+					.append("    Method method = service.getClass().getMethod((String) map.get(\"method\"), Map.class);\n")
+					.append("    return method.invoke(service, map);\n")
+					.append("  }\n")
+					.append("\n");
+		}
+		builder	.append("  public static <T> T getEntity(String json, Class<T> clazz) throws Exception {\n")
 				.append("    return getEntity(json, clazz, false);\n")
 				.append("  }\n")
 				.append("\n")
@@ -623,11 +712,11 @@ public class BuildType {
 				.append("  }\n")
 				.append("\n")
 				.append("  public static Map<String, Object> getMap(String json) throws Exception {\n")
-				.append("    return getEntity(json, Map.class, false);\n")
+				.append("    return getEntity(json, Map.class);\n")
 				.append("  }\n")
 				.append("\n")
 				.append("  public static Map<String, Object> getMapFromBase64(String json) throws Exception {\n")
-				.append("    return getEntity(json, Map.class, true);\n")
+				.append("    return getEntityFromBase64(json, Map.class);\n")
 				.append("  }\n")
 				.append("\n")
 				.append("  private static <T> T getEntity(String json, Class<T> clazz, boolean fromBase64) throws Exception {\n")
