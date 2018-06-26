@@ -167,7 +167,7 @@ public class BuildType {
 				.append("    </style>\n")
 				.append("  </head>\n")
 				.append("  <body>\n")
-				.append("    <h1><center>Demo Of ").append(projectName).append("</center></h1>\n")
+				.append("    <h1><center>Welcome to ").append(projectName).append("</center></h1>\n")
 				.append("    <table border=\"1\" align=\"center\">\n")
 				.append("      <tr>\n")
 				.append("        <th>ProjectName</th>\n")
