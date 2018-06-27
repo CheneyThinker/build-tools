@@ -156,7 +156,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getHtml(String projectName, String author, boolean model, boolean personal) {
+	public String getHtml(String projectName, String author, boolean model, boolean personal, String jQuery) {
 		clear();
 		builder
 		.append("<!DOCTYPE html>\n")
@@ -184,6 +184,7 @@ public class BuildType {
 		.append("        <th>Version</th>\n")
 		.append("        <th>Major</th>\n")
 		.append(model ? "        <th>MethodOf".concat(projectName).concat("</th>\n") : "")
+		.append("        <th>Sign</th>\n")
 		.append("      </tr>\n")
 		.append("      <tr>\n")
 		.append("        <td id=\"projectName\"></td>\n")
@@ -191,6 +192,7 @@ public class BuildType {
 		.append("        <td id=\"version\"></td>\n")
 		.append("        <td id=\"major\"></td>\n")
 		.append(model ? "        <td id=\"methodOf".concat(projectName).concat("\"></td>\n") : "")
+		.append("        <td id=\"Sign\"></td>\n")
 		.append("      </tr>\n")
 		.append("    </table>\n");
 		if (personal) {
@@ -212,8 +214,10 @@ public class BuildType {
 		}
 		builder
 		.append("  </body>\n")
-		.append("  <script src=\"http://code.jquery.com/jquery-latest.min.js\"></script>\n")
+		.append("  <!--<script src=\"http://code.jquery.com/jquery-latest.min.js\"></script>-->\n")
+		.append("  <script src=\"jquery-").append(jQuery).append(".min.js\"></script>\n")
 		.append("  <script src=\"jquery.base64.js\"></script>\n")
+		.append("  <script src=\"md5.js\"></script>\n")
 		.append("  <script src=\"request.js\"></script>\n")
 		.append("  <script>\n")
 		.append("    $(\n")
@@ -231,6 +235,7 @@ public class BuildType {
 			.append("          {\n");
 		}
 		builder
+		.append("            sign: hex_md5('").append(projectName).append(" By ").append(author).append("'),\n")
 		.append("            author: '").append(author).append("'\n")
 		.append("          },\n")
 		.append("          function(data) {\n")
@@ -650,10 +655,10 @@ public class BuildType {
 		if (model) {
 			if (personal) {
 				builder
-				.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n")
-				.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
+				.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n");
 			}
 			builder
+			.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
 			.append("import org.springframework.stereotype.Service;\n")
 			.append("\n");
 		}
@@ -670,25 +675,29 @@ public class BuildType {
 		.append("\n");
 		if (model) {
 			builder
-			.append("  public Map<String, Object> index(Map<String, Object> map) throws Exception {\n");
+			.append("  public Map<String, Object> index(Map<String, Object> map) throws Exception {\n")
+			.append("    if (map.get(\"sign\").equals(").append(projectName).append("Utils.md5(\"").append(projectName).append(" By ").append(author).append("\"))) {\n");
 			if (personal) {
 				String firstLowerCase = firstLowerCase(projectName);
 				builder
-				.append("    ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
-				.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
-				.append("    map.put(\"projectName\", cons.getProjectName());\n")
-				.append("    map.put(\"version\", cons.getVersion());\n")
-				.append("    map.put(\"major\", cons.getMajor());\n")
-				.append("    map.put(\"cons\", cons);\n")
-				.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
+				.append("      ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
+				.append("      ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
+				.append("      map.put(\"projectName\", cons.getProjectName());\n")
+				.append("      map.put(\"version\", cons.getVersion());\n")
+				.append("      map.put(\"major\", cons.getMajor());\n")
+				.append("      map.put(\"cons\", cons);\n")
+				.append("      map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
 			} else {
 				builder
-				.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
-				.append("    map.put(\"version\", \"PRO\");\n")
-				.append("    map.put(\"major\", \"1.0\");\n");
+				.append("      map.put(\"projectName\", \"").append(projectName).append("\");\n")
+				.append("      map.put(\"version\", \"PRO\");\n")
+				.append("      map.put(\"major\", \"1.0\");\n");
 			}
 			builder
-			.append("    return map;\n")
+			.append("      return map;\n")
+			.append("    } else {\n")
+			.append("      return null;\n")
+			.append("    }\n")
 			.append("  }\n");
 		} else {
 			builder
@@ -725,25 +734,29 @@ public class BuildType {
 		.append("public class ").append(projectName).append("ServiceImpl implements ").append(projectName).append("Service {\n")
 		.append("\n")
 		.append("  public Map<String, Object> index(Object object) throws Exception {\n")
-		.append("    Map<String, Object> map = ").append(projectName).append("Utils.conversion(object);\n");
+		.append("    Map<String, Object> map = ").append(projectName).append("Utils.conversion(object);\n")
+		.append("    if (map.get(\"sign\").equals(").append(projectName).append("Utils.md5(\"").append(projectName).append(" By ").append(author).append("\"))) {\n");
 		if (personal) {
 			String firstLowerCase = firstLowerCase(projectName);
 			builder
-			.append("    ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
-			.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
-			.append("    map.put(\"projectName\", cons.getProjectName());\n")
-			.append("    map.put(\"version\", cons.getVersion());\n")
-			.append("    map.put(\"major\", cons.getMajor());\n")
-			.append("    map.put(\"cons\", cons);\n")
-			.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
+			.append("      ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
+			.append("      ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
+			.append("      map.put(\"projectName\", cons.getProjectName());\n")
+			.append("      map.put(\"version\", cons.getVersion());\n")
+			.append("      map.put(\"major\", cons.getMajor());\n")
+			.append("      map.put(\"cons\", cons);\n")
+			.append("      map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
 		} else {
 			builder
-			.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
-			.append("    map.put(\"version\", \"PRO\");\n")
-			.append("    map.put(\"major\", \"1.0\");\n");
+			.append("      map.put(\"projectName\", \"").append(projectName).append("\");\n")
+			.append("      map.put(\"version\", \"PRO\");\n")
+			.append("      map.put(\"major\", \"1.0\");\n")
+			.append("      return map;\n");
 		}
 		builder
-		.append("    return map;\n")
+		.append("    } else {\n")
+		.append("      return null;\n")
+		.append("    }\n")
 		.append("  }\n")
 		.append("\n")
 		.append("}");
@@ -860,6 +873,8 @@ public class BuildType {
 		builder
 		.append("\n")
 		.append(model ? "import java.lang.reflect.Method;\n" : "")
+		.append("import java.security.MessageDigest;\n")
+		.append("import java.security.NoSuchAlgorithmException;\n")
 		.append("import java.util.Base64;\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
@@ -975,6 +990,46 @@ public class BuildType {
 		.append("  public static <T> T conversion(Object value) {\n")
 		.append("    return (T) value;\n")
 		.append("  }\n")
+		.append("\n")
+		.append("  public static String md5(String content) {\n")
+		.append("    try {\n")
+		.append("      MessageDigest messageDigest = MessageDigest.getInstance(\"MD5\");\n")
+		.append("      byte[] bytes = messageDigest.digest(content.getBytes());\n")
+		.append("      StringBuffer buffer = new StringBuffer();\n")
+		.append("      for (byte b : bytes) {\n")
+		.append("        int number = b & 0xff;\n")
+		.append("        String str = Integer.toHexString(number);\n")
+		.append("        if (str.length() == 1) {\n")
+		.append("          buffer.append(\"0\");\n")
+		.append("        }\n")
+		.append("        buffer.append(str);\n")
+		.append("      }\n")
+		.append("      return buffer.toString();\n")
+		.append("    } catch (NoSuchAlgorithmException e) {\n")
+		.append("      return \"\";\n")
+		.append("    }\n")
+		.append("  }\n")
+		//.append("\n")
+		//.append("  public static String md5(String content) {\n")
+		//.append("    char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };\n")
+		//.append("    try {\n")
+		//.append("      byte[] bytes = content.getBytes();\n")
+		//.append("      MessageDigest messageDigest = MessageDigest.getInstance("MD5");\n")
+		//.append("      messageDigest.update(bytes);\n")
+		//.append("      bytes = messageDigest.digest();\n")
+		//.append("      int j = bytes.length;\n")
+		//.append("      char str[] = new char[j << 1];\n")
+		//.append("      int k = 0;\n")
+		//.append("      for (int i = 0; i < j; i++) {\n")
+		//.append("        byte b = bytes[i];\n")
+		//.append("        str[k++] = hexDigits[b >>> 4 & 0xf];\n")
+		//.append("        str[k++] = hexDigits[b & 0xf];\n")
+		//.append("      }\n")
+		//.append("      return new String(str);\n")
+		//.append("    } catch (NoSuchAlgorithmException e) {\n")
+		//.append("      return \"\";\n")
+		//.append("    }\n")
+		//.append("  }\n")
 		.append("\n")
 		.append("}");
 		return builder.toString();

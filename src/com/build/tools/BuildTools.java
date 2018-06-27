@@ -7,7 +7,11 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,9 +143,6 @@ public class BuildTools {
 								}
 								File filter = new File(project.getPath() + "/filter");
 								filter.mkdirs();
-								write(type.getBase64JS(), front + "/jquery.base64.js");
-								write(type.getRequestJS(projectName, port, model.equals("simpliy")), front + "/request.js");
-								write(type.getHtml(projectName, author, model.equals("simpliy"), personal.equals("false")), front + "/" + projectName + ".html");
 							
 								String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
 								
@@ -173,14 +174,44 @@ public class BuildTools {
 									write(type.getYMLConfig(projectName, packageName, author), config.getPath() + "/" + projectName + "YMLConfig.java");
 								}
 
-								StringBuffer command = null;
+								StringBuffer command = new StringBuffer();
+								byte[] buffer = new byte[1024];
+						        int readBytes = -1;
+						        String jQuery = null;
+								try {
+									URL url = new URL("http://code.jquery.com/jquery-latest.min.js");
+									URLConnection urlConnection = url.openConnection();
+									InputStream is = urlConnection.getInputStream();
+									OutputStream os = new FileOutputStream(front.getPath() + "/jquery-1.11.1.min.js");
+									try {
+										int i = 0;
+										while ((readBytes = is.read(buffer)) != -1) {
+											os.write(buffer, 0, readBytes);
+											if (i == 0) {
+												jQuery = new String(buffer);
+												jQuery = jQuery.substring(jQuery.indexOf("v") + 1, jQuery.indexOf("|") - 1);
+											}
+											i++;
+										}
+									} finally {
+										os.close();
+										is.close();
+									}
+									if (!jQuery.equals("1.11.1")) {
+										command.append("rename ").append(front.getAbsolutePath()).append("\\jquery-1.11.1.min.js jquery-").append(jQuery).append(".min.js");
+										command.append("\n");
+									}
+								} catch (Exception ex) {
+									BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "jquery-1.11.1.min.js");
+									jQuery = "1.11.1";
+								}
+								BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "md5.js");
 								String[] outerJars = null;
 								if (!BuildUtils.isEmpty(outerJar)) {
 									File libs = new File(resources.getPath() + "/lib");
 									if (!libs.exists()) {
 										libs.mkdirs();
 									}
-									command = new StringBuffer();
 									outerJars = outerJar.contains("$") ? outerJar.split("\\$") : new String[] {outerJar};
 									for (String string : outerJars) {
 										if (!BuildUtils.isEmpty(string)) {
@@ -200,9 +231,6 @@ public class BuildTools {
 										}
 									}
 									String[] wsdls = wsdl.contains("$") ? wsdl.split("\\$") : new String[] {wsdl};
-									if (BuildUtils.isEmpty(command)) {
-										command = new StringBuffer();
-									}
 									wsdlJars = new String[wsdls.length];
 									for (int i = 0; i < wsdlJars.length; i++) {
 										if (!BuildUtils.isEmpty(wsdls[i])) {
@@ -232,7 +260,7 @@ public class BuildTools {
 										}
 									}
 								}
-								if (!BuildUtils.isEmpty(command)) {
+								if (!BuildUtils.isEmpty(command.toString())) {
 									try {
 										//command.append("\n");
 										//command.append("exit");
@@ -247,6 +275,11 @@ public class BuildTools {
 									}
 								}
 								write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true"), personal.equals("false")), projectName + "/" + projectName + "/pom.xml");
+								
+								write(type.getBase64JS(), front + "/jquery.base64.js");
+								write(type.getRequestJS(projectName, port, model.equals("simpliy")), front + "/request.js");
+								write(type.getHtml(projectName, author, model.equals("simpliy"), personal.equals("false"), jQuery), front + "/" + projectName + ".html");
+								
 								System.exit(0);
 							} catch (Exception ex) {
 							}

@@ -1,6 +1,11 @@
 package com.build.tools.utils;
 
 import java.awt.Font;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Enumeration;
 
 import javax.swing.UIManager;
@@ -34,6 +39,21 @@ public final class BuildUtils {
 				UIManager.put(key, fontRes);
 			}
 	    }
+	}
+
+	public static void readLocal(Class<?> clazz, byte[] buffer, int readBytes, String path, String fileName) throws Exception {
+		URL url = clazz.getResource(fileName);
+        URLConnection urlConnection = url.openConnection();
+		InputStream is = urlConnection.getInputStream();
+		OutputStream os = new FileOutputStream(path + "/" + fileName);
+		try {
+			while ((readBytes = is.read(buffer)) != -1) {
+				os.write(buffer, 0, readBytes);
+			}
+		} finally {
+			os.close();
+			is.close();
+		}
 	}
 
 }
