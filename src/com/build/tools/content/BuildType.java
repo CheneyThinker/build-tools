@@ -156,16 +156,22 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getHtml(String projectName, String author, boolean model) {
+	public String getHtml(String projectName, String author, boolean model, boolean personal) {
 		clear();
 		builder
+		.append("<!DOCTYPE html>\n")
 		.append("<html>\n")
 		.append("  <head>\n")
 		.append("    <meta charset='utf-8'>\n")
 		.append("    <title>").append(projectName).append("</title>\n")
 		.append("    <style>\n")
-		.append("      td {\n")
-		.append("        text-align: center\n")
+		.append("      table {\n")
+		.append("        text-align: center;\n")
+		.append("        word-wrap: break-word;\n")
+		.append("        word-break: break-all;\n")
+		.append("      }\n")
+		.append("      .key {\n")
+		.append("        width: 300px;\n")
 		.append("      }\n")
 		.append("    </style>\n")
 		.append("  </head>\n")
@@ -177,14 +183,34 @@ public class BuildType {
 		.append("        <th>Author</th>\n")
 		.append("        <th>Version</th>\n")
 		.append("        <th>Major</th>\n")
+		.append(model ? "        <th>MethodOf".concat(projectName).concat("</th>\n") : "")
 		.append("      </tr>\n")
 		.append("      <tr>\n")
 		.append("        <td id=\"projectName\"></td>\n")
 		.append("        <td id=\"author\"></td>\n")
 		.append("        <td id=\"version\"></td>\n")
 		.append("        <td id=\"major\"></td>\n")
+		.append(model ? "        <td id=\"methodOf".concat(projectName).concat("\"></td>\n") : "")
 		.append("      </tr>\n")
-		.append("    </table>\n")
+		.append("    </table>\n");
+		if (personal) {
+			builder
+			.append("    <h1><center>Inter Of ").append(projectName).append("</center></h1>\n")
+			.append("    <table border=\"1\" align=\"center\" id=\"inter\">\n")
+			.append("      <tr>\n")
+			.append("        <th class='key'>Key</th>\n")
+			.append("        <th>Value</th>\n")
+			.append("      </tr>\n")
+			.append("    </table>\n")
+			.append("    <h1><center>Cons Of ").append(projectName).append("</center></h1>\n")
+			.append("    <table border=\"1\" align=\"center\" id=\"cons\">\n")
+			.append("      <tr>\n")
+			.append("        <th class='key'>Key</th>\n")
+			.append("        <th>Value</th>\n")
+			.append("      </tr>\n")
+			.append("    </table>\n");
+		}
+		builder
 		.append("  </body>\n")
 		.append("  <script src=\"http://code.jquery.com/jquery-latest.min.js\"></script>\n")
 		.append("  <script src=\"jquery.base64.js\"></script>\n")
@@ -192,7 +218,8 @@ public class BuildType {
 		.append("  <script>\n")
 		.append("    $(\n")
 		.append("      function() {\n")
-		.append("        postBase64Json\n")
+		.append("        //postBase64Json\n")
+		.append("        postJson\n")
 		.append("        (\n");
 		if (model) {
 			builder
@@ -208,7 +235,21 @@ public class BuildType {
 		.append("          },\n")
 		.append("          function(data) {\n")
 		.append("            for(var key in data) {\n")
-		.append("              $('#' + key).html(data[key]);\n")
+		.append("              var value = data[key]\n");
+		if (personal) {
+			builder
+			.append("              if (typeof value == 'object') {\n")
+			.append("                for(var itemKey in value) {\n")
+			.append("                  var item = '<td class=\"key\">' + itemKey + '</td>'\n")
+			.append("                           + '<td>' + value[itemKey] + '</td>'\n")
+			.append("                  $('#' + key).append('<tr>' + item + '</tr>')\n")
+			.append("                }\n")
+			.append("              } else {\n")
+			.append("  ");
+		}
+		builder
+		.append("              $('#' + key).html(value)\n")
+		.append(personal ? "              }\n" : "")
 		.append("            }\n")
 		.append("          }\n")
 		.append("        )\n")
@@ -320,12 +361,12 @@ public class BuildType {
 		if (personal) {
 			builder
 			.append("\n")
-			.append(projectName.toLowerCase()).append(":\n")
-			.append("  cons:\n")
+			.append(splitByUpperCaseAndAddLine(projectName)).append(":\n")
+			.append("  cons: #常量定义\n")
 			.append("    projectName: ").append(projectName).append("\n")
 			.append("    version: PRO\n")
 			.append("    major: 1.0\n")
-			.append("  inter:\n")
+			.append("  inter: #第三方接口定义\n")
 			.append("    index: http://").append(ip).append(":").append(port).append("/").append(projectName).append(model ? "/invoke" : "/");
 		}
 		return builder.toString();
@@ -603,16 +644,14 @@ public class BuildType {
 		builder
 		.append("package com.").append(packageName).append(".service;\n")
 		.append("\n");
-		if (personal) {
-			builder
-			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n")
-			.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
-		}
 		if (model) {
+			if (personal) {
+				builder
+				.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n")
+				.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
+			}
 			builder
-			.append("import org.springframework.beans.factory.annotation.Autowired;\n")
 			.append("import org.springframework.stereotype.Service;\n")
-			.append("import org.springframework.web.client.RestTemplate;\n")
 			.append("\n");
 		}
 		builder
@@ -628,16 +667,17 @@ public class BuildType {
 		.append("\n");
 		if (model) {
 			builder
-			.append("  @Autowired\n")
-			.append("  private RestTemplate restTemplate;\n")
-			.append("\n")
 			.append("  public Map<String, Object> index(Map<String, Object> map) throws Exception {\n");
 			if (personal) {
+				String firstLowerCase = firstLowerCase(projectName);
 				builder
-				.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig().getCons();\n")
+				.append("    ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
+				.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
 				.append("    map.put(\"projectName\", cons.getProjectName());\n")
 				.append("    map.put(\"version\", cons.getVersion());\n")
-				.append("    map.put(\"major\", cons.getMajor());\n");
+				.append("    map.put(\"major\", cons.getMajor());\n")
+				.append("    map.put(\"cons\", cons);\n")
+				.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig().getInter());\n");
 			} else {
 				builder
 				.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
@@ -669,9 +709,7 @@ public class BuildType {
 		}
 		builder
 		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
-		.append("import org.springframework.beans.factory.annotation.Autowired;\n")
 		.append("import org.springframework.stereotype.Service;\n")
-		.append("import org.springframework.web.client.RestTemplate;\n")
 		.append("\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
@@ -683,17 +721,18 @@ public class BuildType {
 		.append("@Service\n")
 		.append("public class ").append(projectName).append("ServiceImpl implements ").append(projectName).append("Service {\n")
 		.append("\n")
-		.append("  @Autowired\n")
-		.append("  private RestTemplate restTemplate;\n")
-		.append("\n")
 		.append("  public Map<String, Object> index(Object object) throws Exception {\n")
-		.append("    Map<String, Object> map = (Map<String, Object>) object;\n");
+		.append("    Map<String, Object> map = ").append(projectName).append("Utils.conversion(object);\n");
 		if (personal) {
+			String firstLowerCase = firstLowerCase(projectName);
 			builder
-			.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig().getCons();\n")
+			.append("    ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
+			.append("    ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
 			.append("    map.put(\"projectName\", cons.getProjectName());\n")
 			.append("    map.put(\"version\", cons.getVersion());\n")
-			.append("    map.put(\"major\", cons.getMajor());\n");
+			.append("    map.put(\"major\", cons.getMajor());\n")
+			.append("    map.put(\"cons\", cons);\n")
+			.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig().getInter());\n");
 		} else {
 			builder
 			.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
@@ -721,7 +760,8 @@ public class BuildType {
 		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
 		if (personal) {
 			builder
-			.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+			.append("import org.springframework.beans.factory.annotation.Autowired;\n")
+			.append("import org.springframework.web.client.RestTemplate;\n");
 		}
 		builder
 		.append("\n")
@@ -742,7 +782,9 @@ public class BuildType {
 			builder
 			.append("\n")
 			.append("  @Autowired\n")
-			.append("  private ").append(projectName).append("YMLConfig ").append(projectName.toLowerCase()).append("YMLConfig;\n");
+			.append("  private ").append(projectName).append("YMLConfig ").append(firstLowerCase(projectName)).append("YMLConfig;\n")
+			.append("  @Autowired\n")
+			.append("  private RestTemplate restTemplate;\n");
 		}
 		builder
 		.append("\n")
@@ -753,12 +795,18 @@ public class BuildType {
 		.append("    try {\n");
 		if (personal) {
 			builder
-			.append("      ").append(projectName).append("Utils.set").append(projectName).append("YMLConfig(").append(projectName.toLowerCase()).append("YMLConfig);\n");
+			.append("      ").append(projectName).append("Utils.install").append(projectName).append("YMLConfig(").append(firstLowerCase(projectName)).append("YMLConfig);\n")
+			.append("      ").append(projectName).append("Utils.installRestTemplate(restTemplate);\n");
 		}
 		builder
 		.append("      HttpServletRequest request = (HttpServletRequest) servletRequest;\n")
 		.append("      HttpServletResponse response = (HttpServletResponse) servletResponse;\n")
-		.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(request.getParameter(\"data\"));\n")
+		.append("      //Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(request.getParameter(\"data\"));\n")
+		.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMap(request.getParameter(\"data\"));\n")
+		.append("      /*if (map.containsKey(\"authToken\") && map.containsKey(\"systemId\")) {\n")
+		.append("        String authToken = (String) map.remove(\"authToken\");\n")
+		.append("        String systemId = (String) map.remove(\"systemId\");\n")
+		.append("      }*/\n")
 		.append("      request.setAttribute(\"data\", map);\n")
 		.append("      filterChain.doFilter(request, response);\n")
 		.append("    } catch (Exception e) {\n")
@@ -780,18 +828,22 @@ public class BuildType {
 		.append("import com.fasterxml.jackson.databind.ObjectMapper;\n");
 		if (personal) {
 			builder
-			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n");
+			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n")
+			.append("import org.springframework.http.HttpEntity;\n")
+			.append("import org.springframework.http.HttpHeaders;\n")
+			.append("import org.springframework.http.MediaType;\n")
+			.append("import org.springframework.util.LinkedMultiValueMap;\n")
+			.append("import org.springframework.util.MultiValueMap;\n");
 		}
 		builder
-		.append("import org.springframework.http.HttpEntity;\n")
-		.append("import org.springframework.http.HttpHeaders;\n")
-		.append("import org.springframework.http.MediaType;\n")
-		.append("import org.springframework.util.LinkedMultiValueMap;\n")
-		.append("import org.springframework.util.MultiValueMap;\n")
-		.append("import org.springframework.util.StringUtils;\n")
-		.append("import org.springframework.web.client.RestTemplate;\n")
+		.append("import org.springframework.util.StringUtils;\n");
+		if (personal) {
+			builder
+			.append("import org.springframework.web.client.RestTemplate;\n");
+		}
+		builder
 		.append("\n")
-		.append("import java.lang.reflect.Method;\n")
+		.append(model ? "import java.lang.reflect.Method;\n" : "")
 		.append("import java.util.Base64;\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
@@ -808,21 +860,29 @@ public class BuildType {
 		.append("\n");
 		if (personal) {
 			builder
-			.append("  private static ").append(projectName).append("YMLConfig ").append(projectName.toLowerCase()).append("YMLConfig;\n");
+			.append("  private static ").append(projectName).append("YMLConfig ").append(firstLowerCase(projectName)).append("YMLConfig;\n")
+			.append("  private static RestTemplate restTemplate;\n");
 		}
 		builder
 		.append("  private static ObjectMapper mapper = new ObjectMapper();\n")
 		.append("\n");
 		if (personal) {
+			String firstLowerCase = firstLowerCase(projectName);
 			builder
-			.append("  public static void set").append(projectName).append("YMLConfig(").append(projectName).append("YMLConfig _").append(projectName.toLowerCase()).append("YMLConfig) {\n")
-			.append("    if (StringUtils.isEmpty(").append(projectName.toLowerCase()).append("YMLConfig)) {\n")
-			.append("      ").append(projectName.toLowerCase()).append("YMLConfig = _").append(projectName.toLowerCase()).append("YMLConfig;\n")
+			.append("  public static void installRestTemplate(RestTemplate _restTemplate) {\n")
+			.append("    if (StringUtils.isEmpty(restTemplate)) {\n")
+			.append("      restTemplate = _restTemplate;\n")
+			.append("    }\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public static void install").append(projectName).append("YMLConfig(").append(projectName).append("YMLConfig _").append(firstLowerCase).append("YMLConfig) {\n")
+			.append("    if (StringUtils.isEmpty(").append(firstLowerCase).append("YMLConfig)) {\n")
+			.append("      ").append(firstLowerCase).append("YMLConfig = _").append(firstLowerCase).append("YMLConfig;\n")
 			.append("    }\n")
 			.append("  }\n")
 			.append("\n")
 			.append("  public static ").append(projectName).append("YMLConfig get").append(projectName).append("YMLConfig() {\n")
-			.append("    return ").append(projectName.toLowerCase()).append("YMLConfig;\n")
+			.append("    return ").append(firstLowerCase).append("YMLConfig;\n")
 			.append("  }\n")
 			.append("\n");
 		}
@@ -830,7 +890,7 @@ public class BuildType {
 			builder
 			.append("  public static Object invoke(Object data, Object service) throws Exception {\n")
 			.append("    Map<String, Object> map = (Map<String, Object>) data;\n")
-			.append("    Method method = service.getClass().getMethod((String) map.get(\"methodOf").append(projectName).append("\"), Map.class);\n")
+			.append("    Method method = service.getClass().getMethod((String) map.").append(personal ? "get" : "remove").append("(\"methodOf").append(projectName).append("\"), Map.class);\n")
 			.append("    return method.invoke(service, map);\n")
 			.append("  }\n")
 			.append("\n");
@@ -862,37 +922,42 @@ public class BuildType {
 		.append("    }\n")
 		.append("    return mapper.readValue(json, clazz);\n")
 		.append("  }\n")
-		.append("\n")
-		.append("  public static <T> T get(String url, RestTemplate restTemplate, Class<T> clazz) {\n")
-		.append("    return restTemplate.getForObject(url, clazz);\n")
-		.append("  }\n")
-		.append("\n")
-		.append("  public static <T> T post(String url, Map<String, Object> params, RestTemplate restTemplate, Class<T> clazz) {\n")
-		.append("    HttpHeaders headers = new HttpHeaders();\n")
-		.append("    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);\n")
-		.append("    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
-		.append("    map.setAll(params);\n")
-		.append("    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
-		.append("    return restTemplate.postForObject(url, formEntity , clazz);\n")
-		.append("  }\n")
-		.append("\n")
-		.append("  public static <T> T postJson(String url, Map<String, Object> params, RestTemplate restTemplate, Class<T> clazz) {\n")
-		.append("    HttpHeaders headers = new HttpHeaders();\n")
-		.append("    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);\n")
+		.append("\n");
+		if (personal) {
+			builder
+			.append("  public static <T> T get(String url, Class<T> clazz) {\n")
+			.append("    return restTemplate.getForObject(url, clazz);\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public static <T> T post(").append(model ? "" : "String url, ").append("Map<String, Object> params, Class<T> clazz) {\n")
+			.append("    HttpHeaders headers = new HttpHeaders();\n")
+			.append("    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);\n")
+			.append("    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
+			.append(model ? "    String url = (String) params.remove(\"methodOf".concat(projectName).concat("\");\n") : "")
+			.append("    map.setAll(params);\n")
+			.append("    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
+			.append("    return restTemplate.postForObject(url, formEntity, clazz);\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public static <T> T postJson(").append(model ? "" : "String url, ").append("Map<String, Object> params, Class<T> clazz) {\n")
+			.append("    HttpHeaders headers = new HttpHeaders();\n")
+			.append("    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);\n")
+			.append("    return restTemplate.postForObject(").append(model ? "(String) params.remove(\"methodOf".concat(projectName).concat("\")") : "url").append(", new HttpEntity<String>(toJson(params), headers), clazz);\n")
+			.append("  }\n")
+			.append("\n");
+		}
+		builder
+		.append("  public static String toJson(Object value) {\n")
 		.append("    try {\n")
-		.append("      return restTemplate.postForObject(url, new HttpEntity<String>(mapper.writeValueAsString(params), headers), clazz);\n")
+		.append("      return mapper.writeValueAsString(value);\n")
 		.append("    } catch (Exception e) {\n")
 		.append("      //It's impossible to happen\n")
 		.append("      return null;\n")
 		.append("    }\n")
 		.append("  }\n")
 		.append("\n")
-		.append("  public static String toJson(Object value) {\n")
-		.append("    try {\n")
-		.append("      return mapper.writeValueAsString(value);\n")
-		.append("    } catch (Exception e) {\n")
-		.append("      return null;\n")
-		.append("    }\n")
+		.append("  public static <T> T conversion(Object value) {\n")
+		.append("    return (T) value;\n")
 		.append("  }\n")
 		.append("\n")
 		.append("}");
@@ -970,7 +1035,7 @@ public class BuildType {
 		.append(" * @date ").append(date).append("\n")
 		.append(" */\n")
 		.append("@Component\n")
-		.append("@ConfigurationProperties(prefix = \"").append(projectName.toLowerCase()).append("\")\n")
+		.append("@ConfigurationProperties(prefix = \"").append(splitByUpperCaseAndAddLine(projectName)).append("\")\n")
 		.append("public class ").append(projectName).append("YMLConfig {\n")
 		.append("\n")
 		.append("  @Autowired\n")
@@ -1037,5 +1102,22 @@ public class BuildType {
 	public String firstUpperCase(String content) {
 		return content.toUpperCase().charAt(0) + content.substring(1);
 	}
-
+	
+	public String splitByUpperCaseAndAddLine(String content) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0, j = content.length(); i < j; i++) {
+			char ch = content.charAt(i);
+			if (ch >= 'A' && ch <= 'Z') {
+				builder.append(i == 0 ? "" : "-").append((char)(ch + 32));
+			} else {
+				builder.append(ch);
+			}
+		}
+		return builder.toString();
+	}
+	
+	public String firstLowerCase(String content) {
+		return content.toLowerCase().charAt(0) + content.substring(1);
+	}
+	
 }
