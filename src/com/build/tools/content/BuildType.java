@@ -625,6 +625,9 @@ public class BuildType {
 		.append("\n")
 		.append(model ? "  INVOKE(\"Invocation invoke fail!\");\n" : "  INDEX(\"Invocation index fail!\");\n")
 		.append("\n")
+		//.append("  MODEL(\"application/x-www-form-urlencoded\"),\n")
+		//.append("  JSON(\"application/json\");\n")
+		//.append("\n")
 		.append("  final String content;\n")
 		.append("\n")
 		.append("  ").append(projectName).append("Mapping(final String content) {\n")
@@ -757,6 +760,7 @@ public class BuildType {
 			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n");
 		}
 		builder
+		//.append("import com.").append(packageName).append(".mapping.").append(projectName).append("Mapping;\n")
 		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
 		if (personal) {
 			builder
@@ -769,6 +773,7 @@ public class BuildType {
 		.append("import javax.servlet.annotation.WebFilter;\n")
 		.append("import javax.servlet.http.HttpServletRequest;\n")
 		.append("import javax.servlet.http.HttpServletResponse;\n")
+		//.append("import java.io.BufferedReader;\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
 		.append("/**\n")
@@ -801,6 +806,17 @@ public class BuildType {
 		builder
 		.append("      HttpServletRequest request = (HttpServletRequest) servletRequest;\n")
 		.append("      HttpServletResponse response = (HttpServletResponse) servletResponse;\n")
+		//.append("      String data = \"\";\n")
+		//.append("      if (request.getContentType().startsWith(").append(projectName).append("Mapping.MODEL.getContent())) {\n")
+		//.append("        data = request.getParameter(\"data\");\n")
+		//.append("      } else if (request.getContentType().startsWith(").append(projectName).append("Mapping.JSON.getContent())) {\n")
+		//.append("        BufferedReader bufferedReader = request.getReader();\n")
+		//.append("        String temp;\n")
+		//.append("        while (null != (temp = bufferedReader.readLine())) {\n")
+		//.append("          data = data.concat(temp);\n")
+		//.append("        }\n")
+		//.append("        bufferedReader.close();\n")
+		//.append("      }\n")
 		.append("      //Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(request.getParameter(\"data\"));\n")
 		.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMap(request.getParameter(\"data\"));\n")
 		.append("      /*if (map.containsKey(\"authToken\") && map.containsKey(\"systemId\")) {\n")
