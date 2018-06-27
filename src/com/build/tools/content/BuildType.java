@@ -677,7 +677,7 @@ public class BuildType {
 				.append("    map.put(\"version\", cons.getVersion());\n")
 				.append("    map.put(\"major\", cons.getMajor());\n")
 				.append("    map.put(\"cons\", cons);\n")
-				.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig().getInter());\n");
+				.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
 			} else {
 				builder
 				.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
@@ -732,7 +732,7 @@ public class BuildType {
 			.append("    map.put(\"version\", cons.getVersion());\n")
 			.append("    map.put(\"major\", cons.getMajor());\n")
 			.append("    map.put(\"cons\", cons);\n")
-			.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig().getInter());\n");
+			.append("    map.put(\"inter\", ").append(firstLowerCase).append("YMLConfig.getInter());\n");
 		} else {
 			builder
 			.append("    map.put(\"projectName\", \"").append(projectName).append("\");\n")
