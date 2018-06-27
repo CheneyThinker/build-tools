@@ -933,7 +933,7 @@ public class BuildType {
 			.append("    HttpHeaders headers = new HttpHeaders();\n")
 			.append("    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);\n")
 			.append("    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
-			.append(model ? "    String url = (String) params.remove(\"methodOf".concat(projectName).concat("\");\n") : "")
+			.append(model ? "    String url = ".concat(firstLowerCase(projectName)).concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"));\n") : "")
 			.append("    map.setAll(params);\n")
 			.append("    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
 			.append("    return restTemplate.postForObject(url, formEntity, clazz);\n")
@@ -942,7 +942,7 @@ public class BuildType {
 			.append("  public static <T> T postJson(").append(model ? "" : "String url, ").append("Map<String, Object> params, Class<T> clazz) {\n")
 			.append("    HttpHeaders headers = new HttpHeaders();\n")
 			.append("    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);\n")
-			.append("    return restTemplate.postForObject(").append(model ? "(String) params.remove(\"methodOf".concat(projectName).concat("\")") : "url").append(", new HttpEntity<String>(toJson(params), headers), clazz);\n")
+			.append("    return restTemplate.postForObject(").append(model ? firstLowerCase(projectName).concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"))") : "url").append(", new HttpEntity<String>(toJson(params), headers), clazz);\n")
 			.append("  }\n")
 			.append("\n");
 		}
