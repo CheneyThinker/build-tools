@@ -192,7 +192,7 @@ public class BuildType {
 		.append("        <td id=\"version\"></td>\n")
 		.append("        <td id=\"major\"></td>\n")
 		.append(model ? "        <td id=\"methodOf".concat(projectName).concat("\"></td>\n") : "")
-		.append("        <td id=\"Sign\"></td>\n")
+		.append("        <td id=\"sign\"></td>\n")
 		.append("      </tr>\n")
 		.append("    </table>\n");
 		if (personal) {
