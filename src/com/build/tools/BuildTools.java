@@ -147,6 +147,7 @@ public class BuildTools {
 								String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
 								
 								write(type.getConfig(port, projectName, model.equals("simpliy"), personal.equals("false")), resources.getPath() + "/application-default.yml");
+								write(type.getLog(projectName, packageName), resources.getPath() + "/logback-spring.xml");
 							
 								write(type.getApplication(projectName, packageName, author), project.getPath() + "/" + projectName + "Application.java");
 							

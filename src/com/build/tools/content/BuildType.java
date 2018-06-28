@@ -166,50 +166,72 @@ public class BuildType {
 		.append("    <title>").append(projectName).append("</title>\n")
 		.append("    <style>\n")
 		.append("      table {\n")
+		.append("        border-collapse: collapse;\n")
 		.append("        text-align: center;\n")
 		.append("        word-wrap: break-word;\n")
 		.append("        word-break: break-all;\n")
+		.append("        font-size: 0.5pt;\n")
+		.append("      }\n")
+		.append("      thead {\n")
+		.append("        background-color: #E9F3FF;\n")
 		.append("      }\n")
 		.append("      .key {\n")
 		.append("        width: 300px;\n")
+		.append("      }\n")
+		.append("      .log {\n")
+		.append("        width: 60px;\n")
 		.append("      }\n")
 		.append("    </style>\n")
 		.append("  </head>\n")
 		.append("  <body>\n")
 		.append("    <h1><center>Welcome to ").append(projectName).append("</center></h1>\n")
-		.append("    <table border=\"1\" align=\"center\">\n")
-		.append("      <tr>\n")
-		.append("        <th>ProjectName</th>\n")
-		.append("        <th>Author</th>\n")
-		.append("        <th>Version</th>\n")
-		.append("        <th>Major</th>\n")
-		.append(model ? "        <th>MethodOf".concat(projectName).concat("</th>\n") : "")
-		.append("        <th>Sign</th>\n")
-		.append("      </tr>\n")
-		.append("      <tr>\n")
-		.append("        <td id=\"projectName\"></td>\n")
-		.append("        <td id=\"author\"></td>\n")
-		.append("        <td id=\"version\"></td>\n")
-		.append("        <td id=\"major\"></td>\n")
-		.append(model ? "        <td id=\"methodOf".concat(projectName).concat("\"></td>\n") : "")
-		.append("        <td id=\"sign\"></td>\n")
-		.append("      </tr>\n")
+		.append("    <table border=\"1\" align=\"center\" id=\"project\">\n")
 		.append("    </table>\n");
 		if (personal) {
 			builder
 			.append("    <h1><center>Inter Of ").append(projectName).append("</center></h1>\n")
-			.append("    <table border=\"1\" align=\"center\" id=\"inter\">\n")
-			.append("      <tr>\n")
-			.append("        <th class='key'>Key</th>\n")
-			.append("        <th>Value</th>\n")
-			.append("      </tr>\n")
+			.append("    <table border=\"1\" align=\"center\">\n")
+			.append("      <thead>\n")
+			.append("        <tr>\n")
+			.append("          <th class='key'>key</th>\n")
+			.append("          <th>value</th>\n")
+			.append("        </tr>\n")
+			.append("      </thead>\n")
+			.append("      <tbody id=\"inter\">\n")
+			.append("      </tbody>\n")
 			.append("    </table>\n")
 			.append("    <h1><center>Cons Of ").append(projectName).append("</center></h1>\n")
-			.append("    <table border=\"1\" align=\"center\" id=\"cons\">\n")
-			.append("      <tr>\n")
-			.append("        <th class='key'>Key</th>\n")
-			.append("        <th>Value</th>\n")
-			.append("      </tr>\n")
+			.append("    <table border=\"1\" align=\"center\">\n")
+			.append("      <thead>\n")
+			.append("        <tr>\n")
+			.append("          <th class='key'>key</th>\n")
+			.append("          <th>value</th>\n")
+			.append("        </tr>\n")
+			.append("      </thead>\n")
+			.append("      <tbody id=\"cons\">\n")
+			.append("      </tbody>\n")
+			.append("    </table>\n")
+			.append("    <h1><center>LogInfo Of ").append(projectName).append("</center></h1>\n")
+			.append("    <table border=\"1\" align=\"center\">\n")
+			.append("      <thead>\n")
+			.append("        <tr>\n")
+			.append("          <th class='key'>fileName</th>\n")
+			.append("          <th>fileSize</th>\n")
+			.append("        </tr>\n")
+			.append("      </thead>\n")
+			.append("      <tbody id=\"logInfo\">\n")
+			.append("      </tbody>\n")
+			.append("    </table>\n")
+			.append("    <h1><center>Logs Of ").append(projectName).append("</center></h1>\n")
+			.append("    <table border=\"1\" align=\"center\">\n")
+			.append("      <thead>\n")
+			.append("        <tr>\n")
+			.append("          <th class='log'>index</th>\n")
+			.append("          <th>log</th>\n")
+			.append("        </tr>\n")
+			.append("      </thead>\n")
+			.append("      <tbody id=\"log\">\n")
+			.append("      </tbody>\n")
 			.append("    </table>\n");
 		}
 		builder
@@ -236,26 +258,32 @@ public class BuildType {
 		}
 		builder
 		.append("            sign: hex_md5('").append(projectName).append(" By ").append(author).append("'),\n")
-		.append("            author: '").append(author).append("'\n")
+		.append("            author: '").append(author).append("',\n")
+		.append("            fileName: '").append(projectName).append(".log'\n")
 		.append("          },\n")
 		.append("          function(data) {\n")
+		.append("            var projectKey = '', projectValue = ''\n")
 		.append("            for(var key in data) {\n")
 		.append("              var value = data[key]\n");
 		if (personal) {
 			builder
 			.append("              if (typeof value == 'object') {\n")
 			.append("                for(var itemKey in value) {\n")
-			.append("                  var item = '<td class=\"key\">' + itemKey + '</td>'\n")
+			.append("                  var item = '<td>' + itemKey + '</td>'\n")
 			.append("                           + '<td>' + value[itemKey] + '</td>'\n")
-			.append("                  $('#' + key).append('<tr>' + item + '</tr>')\n")
+			.append("                  $('#' + key).prepend('<tr>' + item + '</tr>')\n")
 			.append("                }\n")
 			.append("              } else {\n")
 			.append("  ");
 		}
 		builder
-		.append("              $('#' + key).html(value)\n")
+		.append("              projectKey = projectKey\n")
+		.append("                         + '<th>' + key + '</th>'\n")
+		.append("              projectValue = projectValue\n")
+		.append("                           + '<td>' + value + '</td>'\n")
 		.append(personal ? "              }\n" : "")
 		.append("            }\n")
+		.append("             $('#project').append('<thead><tr>' + projectKey + '</tr></thead').append('<tbody><tr>' + projectValue + '</tr></tbody>')\n")
 		.append("          }\n")
 		.append("        )\n")
 		.append("      }\n")
@@ -628,7 +656,8 @@ public class BuildType {
 		.append(" */\n")
 		.append("public enum ").append(projectName).append("Mapping {\n")
 		.append("\n")
-		.append(model ? "  INVOKE(\"Invocation invoke fail!\");\n" : "  INDEX(\"Invocation index fail!\");\n")
+		.append(model ? "  INVOKE(\"Invocation invoke fail!\"),\n" : "  INDEX(\"Invocation index fail!\"),\n")
+		.append("  FILTER(\"Invocation filter fail!\");\n")
 		.append("\n")
 		//.append("  MODEL(\"application/x-www-form-urlencoded\"),\n")
 		//.append("  JSON(\"application/json\");\n")
@@ -651,14 +680,14 @@ public class BuildType {
 		clear();
 		builder
 		.append("package com.").append(packageName).append(".service;\n")
-		.append("\n");
+		.append("\n")
+		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
 		if (model) {
 			if (personal) {
 				builder
 				.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n");
 			}
 			builder
-			.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
 			.append("import org.springframework.stereotype.Service;\n")
 			.append("\n");
 		}
@@ -694,6 +723,8 @@ public class BuildType {
 				.append("      map.put(\"major\", \"1.0\");\n");
 			}
 			builder
+			.append("      map.put(\"log\", ").append(projectName).append("Utils.readLog(map.remove(\"fileName\")));\n")
+			.append("      map.put(\"logInfo\", ").append(projectName).append("Utils.getLogInfo());\n")
 			.append("      return map;\n")
 			.append("    } else {\n")
 			.append("      return null;\n")
@@ -750,10 +781,12 @@ public class BuildType {
 			builder
 			.append("      map.put(\"projectName\", \"").append(projectName).append("\");\n")
 			.append("      map.put(\"version\", \"PRO\");\n")
-			.append("      map.put(\"major\", \"1.0\");\n")
-			.append("      return map;\n");
+			.append("      map.put(\"major\", \"1.0\");\n");
 		}
 		builder
+		.append("      map.put(\"log\", ").append(projectName).append("Utils.readLog(map.remove(\"fileName\")));\n")
+		.append("      map.put(\"logInfo\", ").append(projectName).append("Utils.getLogInfo());\n")
+		.append("      return map;\n")
 		.append("    } else {\n")
 		.append("      return null;\n")
 		.append("    }\n")
@@ -773,20 +806,24 @@ public class BuildType {
 			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n");
 		}
 		builder
-		//.append("import com.").append(packageName).append(".mapping.").append(projectName).append("Mapping;\n")
-		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
+		.append("import com.").append(packageName).append(".core.ResponseGenerator;\n")
+		.append("import com.").append(packageName).append(".mapping.").append(projectName).append("Mapping;\n")
+		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n")
+		.append("import org.slf4j.Logger;\n")
+		.append("import org.slf4j.LoggerFactory;\n");
 		if (personal) {
 			builder
 			.append("import org.springframework.beans.factory.annotation.Autowired;\n")
 			.append("import org.springframework.web.client.RestTemplate;\n");
 		}
 		builder
+		.append("import org.springframework.util.StringUtils;\n")
 		.append("\n")
 		.append("import javax.servlet.*;\n")
 		.append("import javax.servlet.annotation.WebFilter;\n")
 		.append("import javax.servlet.http.HttpServletRequest;\n")
 		.append("import javax.servlet.http.HttpServletResponse;\n")
-		//.append("import java.io.BufferedReader;\n")
+		.append("import java.io.IOException;\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
 		.append("/**\n")
@@ -795,21 +832,27 @@ public class BuildType {
 		.append(" * @date ").append(date).append("\n")
 		.append(" */\n")
 		.append("@WebFilter(\"/").append(projectName).append("/*\")\n")
-		.append("public class ").append(projectName).append("Filter implements Filter {\n");
+		.append("public class ").append(projectName).append("Filter implements Filter {\n")
+		.append("\n");
 		if (personal) {
 			builder
-			.append("\n")
 			.append("  @Autowired\n")
 			.append("  private ").append(projectName).append("YMLConfig ").append(firstLowerCase(projectName)).append("YMLConfig;\n")
 			.append("  @Autowired\n")
 			.append("  private RestTemplate restTemplate;\n");
 		}
 		builder
+		.append("  private Logger logger = LoggerFactory.getLogger(").append(projectName).append("Filter.class);\n")
 		.append("\n")
 		.append("  public void init(FilterConfig filterConfig) {\n")
 		.append("  }\n")
 		.append("\n")
 		.append("  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {\n")
+		.append("    HttpServletRequest request = (HttpServletRequest) servletRequest;\n")
+		.append("    HttpServletResponse response = (HttpServletResponse) servletResponse;\n")
+		.append("    response.setHeader(\"Access-Control-Allow-Origin\", \"*\");\n")
+		.append("    response.setCharacterEncoding(\"UTF-8\");\n")
+		.append("    response.setContentType(\"application/json; charset=UTF-8\");\n")
 		.append("    try {\n");
 		if (personal) {
 			builder
@@ -817,8 +860,6 @@ public class BuildType {
 			.append("      ").append(projectName).append("Utils.installRestTemplate(restTemplate);\n");
 		}
 		builder
-		.append("      HttpServletRequest request = (HttpServletRequest) servletRequest;\n")
-		.append("      HttpServletResponse response = (HttpServletResponse) servletResponse;\n")
 		//.append("      String data = \"\";\n")
 		//.append("      if (request.getContentType().startsWith(").append(projectName).append("Mapping.MODEL.getContent())) {\n")
 		//.append("        data = request.getParameter(\"data\");\n")
@@ -836,9 +877,28 @@ public class BuildType {
 		.append("        String authToken = (String) map.remove(\"authToken\");\n")
 		.append("        String systemId = (String) map.remove(\"systemId\");\n")
 		.append("      }*/\n")
+		.append("      logger.error(").append(projectName).append("Utils.toJson(map));\n")
 		.append("      request.setAttribute(\"data\", map);\n")
 		.append("      filterChain.doFilter(request, response);\n")
 		.append("    } catch (Exception e) {\n")
+		.append("      ServletOutputStream out = null;\n")
+		.append("      try {\n")
+		.append("        out = response.getOutputStream();\n")
+		.append("        String result = ").append(projectName).append("Utils.toJson(ResponseGenerator.genNo(logger, e, ").append(projectName).append("Mapping.FILTER));\n")
+		.append("        logger.error(result);\n")
+		.append("        out.write(result.getBytes(\"UTF-8\"));\n")
+		.append("        out.flush();\n")
+		.append("      } catch (IOException ex) {\n")
+		.append("        ex.printStackTrace();\n")
+		.append("      } finally {\n")
+		.append("        if (!StringUtils.isEmpty(out)) {\n")
+		.append("          try {\n")
+		.append("            out.close();\n")
+		.append("          } catch (IOException exe) {\n")
+		.append("            exe.printStackTrace();\n")
+		.append("          }\n")
+		.append("        }\n")
+		.append("      }\n")
 		.append("    }\n")
 		.append("  }\n")
 		.append("\n")
@@ -872,10 +932,12 @@ public class BuildType {
 		}
 		builder
 		.append("\n")
+		.append("import java.io.*;\n")
 		.append(model ? "import java.lang.reflect.Method;\n" : "")
 		.append("import java.security.MessageDigest;\n")
 		.append("import java.security.NoSuchAlgorithmException;\n")
 		.append("import java.util.Base64;\n")
+		.append("import java.util.HashMap;\n")
 		.append("import java.util.Map;\n")
 		.append("\n")
 		//.append("/*Call WebService(\n")
@@ -1031,6 +1093,31 @@ public class BuildType {
 		//.append("    }\n")
 		//.append("  }\n")
 		.append("\n")
+		.append("  public static Map<Short, String> readLog(Object fileName) {\n")
+		.append("    try {\n")
+		.append("      BufferedReader reader = new BufferedReader(new FileReader(new File(\"log\\\\\".concat(fileName.toString()))));\n")
+		.append("      String temp;\n")
+		.append("      Map<Short, String> map = new HashMap<>();\n")
+		.append("      short i = 0;\n")
+		.append("      while (!StringUtils.isEmpty((temp = reader.readLine()))) {\n")
+		.append("        map.put(++i, temp);\n")
+		.append("      }\n")
+		.append("      return map;\n")
+		.append("    } catch (IOException e) {\n")
+		.append("      return null;\n")
+		.append("    }\n")
+		.append("  }\n")
+		.append("\n")
+		.append("  public static Map<String, Long> getLogInfo() {\n")
+		.append("    File file = new File(\"log\");\n")
+		.append("    File[] files = file.listFiles();\n")
+		.append("    Map<String, Long> logInfo = new HashMap<>();\n")
+		.append("    for (File f : files) {\n")
+		.append("      logInfo.put(f.getName(), f.length());\n")
+		.append("    }\n")
+		.append("    return logInfo;\n")
+		.append("  }\n")
+		.append("\n")
 		.append("}");
 		return builder.toString();
 	}
@@ -1164,6 +1251,47 @@ public class BuildType {
 		.append("\n")
 		.append("}");
 		return builder.toString();
+	}
+	
+	public String getLog(String projectName, String packageName) {
+		clear();
+		return
+		builder
+		.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+		.append("<configuration>\n")
+		.append("  <conversionRule conversionWord=\"clr\" converterClass=\"org.springframework.boot.logging.logback.ColorConverter\" />\n")
+		.append("  <conversionRule conversionWord=\"wex\" converterClass=\"org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter\" />\n")
+		.append("  <conversionRule conversionWord=\"wEx\" converterClass=\"org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter\" />\n")
+		.append("  <property name=\"CONSOLE_LOG_PATTERN\" value=\"${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}\" />\n")
+		.append("  <appender name=\"CONSOLE_LOG\" class=\"ch.qos.logback.core.ConsoleAppender\">\n")
+		.append("    <encoder>\n")
+		//.append("      <!-- %d日期,%p日志级别,%file文件名,%line所在行数,%m输出的信息,%n换行 -->\n")
+		.append("      <pattern>${CONSOLE_LOG_PATTERN}</pattern>\n")
+		.append("      <charset>UTF-8</charset>\n")
+		.append("    </encoder>\n")
+		.append("  </appender>\n")
+		.append("  <root level=\"info\">\n")
+		.append("    <appender-ref ref=\"CONSOLE_LOG\" />\n")
+		.append("  </root>\n")
+		.append("  <appender name=\"").append(projectName).append("Log\" class=\"ch.qos.logback.core.rolling.RollingFileAppender\">\n")
+		.append("    <File>log\\").append(projectName).append(".log</File>\n")
+		.append("    <rollingPolicy class=\"ch.qos.logback.core.rolling.TimeBasedRollingPolicy\">\n")
+		.append("      <fileNamePattern>log\\").append(projectName).append(".%d.%i.log</fileNamePattern>\n")
+		.append("      <timeBasedFileNamingAndTriggeringPolicy class=\"ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP\">\n")
+		.append("        <maxFileSize>64 KB</maxFileSize>\n")
+		.append("      </timeBasedFileNamingAndTriggeringPolicy>\n")
+		.append("    </rollingPolicy>\n")
+		.append("    <encoder>\n")
+		.append("      <pattern>\n")
+		.append("        %d{MM-dd HH:mm:ss} %file %line %m%n\n")
+		.append("      </pattern>\n")
+		.append("      <charset>UTF-8</charset>\n")
+		.append("    </encoder>\n")
+		.append("  </appender>\n")
+		.append("  <logger name=\"com.").append(packageName).append("\" level=\"ERROR\">\n")
+		.append("    <appender-ref ref=\"").append(projectName).append("Log\" />\n")
+		.append("  </logger>\n")
+		.append("</configuration>").toString();
 	}
 	
 	private void clear() {
