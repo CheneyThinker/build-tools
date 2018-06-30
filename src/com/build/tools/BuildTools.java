@@ -35,11 +35,10 @@ cmd /c start dir 会打开一个新窗口后执行dir指令，原窗口会关闭
 cmd /k start dir 会打开一个新窗口后执行dir指令，原窗口不会关闭。 
  */
 public class BuildTools {
-	
-	public static void main(String[] args) {
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				JFrame.setDefaultLookAndFeelDecorated(true);
+  public static void main(String[] args) {
+    java.awt.EventQueue.invokeLater(new Runnable() {
+      public void run() {
+        JFrame.setDefaultLookAndFeelDecorated(true);
 				JDialog.setDefaultLookAndFeelDecorated(true);
 				BuildUtils.initGlobalFontSetting(new Font("Consolas", Font.BOLD, 18));
 				try {
@@ -48,33 +47,35 @@ public class BuildTools {
 					Container container = jFrame.getContentPane();
 					container.setLayout(null);
 					
-					String[] items = {"projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "model:", "personal:", "build"};
-					String[] tips = {"CheneyThinker", "9527", "CheneyThinker", "Example:cheney-thinker-1.0$tea-1.0", "Example:cheney.xml$tea.xml", "false,true", "simpliy,common", "false,true"};
+					String[] items = { "projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "model:", "personal:", "lombok:", "xml:", "conversion:", "Makefile" };
+					String[] tips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0$tea-1.0", "Example:cheney.xml$tea.xml", "false,true", "simpliy,common", "false,true", "false,true", "false,true", "map,entity" };
 					
+					int comItem = 1 + 6;
+					int itemHeight = 35;
 					int width = 500;
-					int height = ((items.length + 1) * 40) + ((items.length + 2) * 5);
+					int height = ((items.length + 1) * itemHeight) + ((items.length + 2) * 5);
 					JLabel[] jLabels = new JLabel[items.length - 1];
-					JTextField[] jTextFields = new JTextField[items.length - 4];
-					for (int i = 0, j = items.length - 4; i < j; i++) {
+					JTextField[] jTextFields = new JTextField[items.length - comItem];
+					for (int i = 0, j = items.length - comItem; i < j; i++) {
 						jLabels[i] = new JLabel(items[i]);
-						jLabels[i].setBounds(5, i * 40 + 5 * (i + 1), 135, 40);
+						jLabels[i].setBounds(5, i * itemHeight + 5 * (i + 1), 135, itemHeight);
 						container.add(jLabels[i]);
 						jTextFields[i] = new JTextField(tips[i]);
-						jTextFields[i].setBounds(140, i * 40 + 5 * (i + 1), 350, 40);
+						jTextFields[i].setBounds(140, i * itemHeight + 5 * (i + 1), 350, itemHeight);
 						container.add(jTextFields[i]);
 					}
-					int i = items.length - 4, j = items.length - 1;
+					int i = items.length - comItem, j = items.length - 1;
 					JComboBox<?>[] jComboBoxs = new JComboBox<?>[j - i];
 					for (int k = 0; i < j; i++, k++) {
 						jLabels[i] = new JLabel(items[i]);
-						jLabels[i].setBounds(5, i * 40 + 5 * (i + 1), 135, 40);
+						jLabels[i].setBounds(5, i * itemHeight + 5 * (i + 1), 135, itemHeight);
 						container.add(jLabels[i]);
 						jComboBoxs[k] = new JComboBox<>(tips[i].split("\\,"));
-						jComboBoxs[k].setBounds(140, i * 40 + 5 * (i + 1), 350, 40);
+						jComboBoxs[k].setBounds(140, i * itemHeight + 5 * (i + 1), 350, itemHeight);
 						container.add(jComboBoxs[k]);
 					}
 					JButton jButton = new JButton(items[items.length - 1]);
-					jButton.setBounds(5, (items.length - 1) * 40 + 5 * (items.length + 1), 485, 40);
+					jButton.setBounds(5, (items.length - 1) * itemHeight + 5 * (items.length + 1), 485, itemHeight);
 					jButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							try {
@@ -86,11 +87,14 @@ public class BuildTools {
 								String sourceOfWsdl = jComboBoxs[0].getSelectedItem().toString();
 								String model = jComboBoxs[1].getSelectedItem().toString();
 								String personal = jComboBoxs[2].getSelectedItem().toString();
+								String lombok = jComboBoxs[3].getSelectedItem().toString();
+								String xml = jComboBoxs[4].getSelectedItem().toString();
+								String conversion = jComboBoxs[5].getSelectedItem().toString();
 								BuildType type = new BuildType();
-								if (outerJar.equals("Example:cheney-thinker-1.0$tea-1.0") || BuildUtils.isEmpty(outerJar)) {
+								if (outerJar.startsWith("Example:") || outerJar.equals("Example:cheney-thinker-1.0$tea-1.0") || BuildUtils.isEmpty(outerJar)) {
 									outerJar = null;
 								}
-								if (wsdl.equals("Example:cheney.xml$tea.xml") || BuildUtils.isEmpty(wsdl)) {
+								if (wsdl.startsWith("Example:") || wsdl.equals("Example:cheney.xml$tea.xml") || BuildUtils.isEmpty(wsdl)) {
 									wsdl = null;
 								}
 								if (BuildUtils.isEmpty(projectName)) {
@@ -146,21 +150,29 @@ public class BuildTools {
 							
 								String packageName = BuildUtils.splitByUpperCaseAndAddDot(projectName);
 								
+								File entity = null;
+								if (conversion.equals("entity")) {
+									entity = new File(project.getPath() + "/entity");
+									entity.mkdir();
+									write(type.getRootEntity(projectName, packageName, author), entity.getPath() + "/" + projectName + ".java");
+									write(type.getProjectEntity(projectName, packageName, author, lombok.equals("true")), entity.getPath() + "/" + projectName + "Entity.java");
+								}
+								
 								write(type.getConfig(port, projectName, model.equals("simpliy"), personal.equals("false")), resources.getPath() + "/application-default.yml");
 								write(type.getLog(projectName, packageName), resources.getPath() + "/logback-spring.xml");
 							
 								write(type.getApplication(projectName, packageName, author), project.getPath() + "/" + projectName + "Application.java");
 							
-								write(type.getUtils(projectName, packageName, author, model.equals("simpliy"), personal.equals("false")), utils.getPath() + "/" + projectName + "Utils.java");
+								write(type.getUtils(projectName, packageName, author, model.equals("simpliy"), personal.equals("false"), xml.equals("true"), conversion.equals("entity")), utils.getPath() + "/" + projectName + "Utils.java");
 							
-								write(type.getService(projectName, packageName, author, model.equals("simpliy"), personal.equals("false")), service.getPath() + "/" + projectName + "Service.java");
-								if (!model.equals("simpliy")) {
+								write(type.getService(projectName, packageName, author, model.equals("simpliy"), personal.equals("false"), conversion.equals("entity")), service.getPath() + "/" + projectName + "Service.java");
+								if (model.equals("common")) {
 									File impl = new File(service.getPath() + "/impl");
 									impl.mkdirs();
 									write(type.getServiceImpl(projectName, packageName, author, personal.equals("false")), impl.getPath() + "/" + projectName + "ServiceImpl.java");
 								}
 								
-								write(type.getFilter(projectName, packageName, author, personal.equals("false")), filter.getPath() + "/" + projectName + "Filter.java");
+								write(type.getFilter(projectName, packageName, author, personal.equals("false"), xml.equals("true"), conversion.equals("entity")), filter.getPath() + "/" + projectName + "Filter.java");
 							
 								write(type.getMapping(projectName, packageName, author, model.equals("simpliy")), mapping.getPath() + "/" + projectName + "Mapping.java");
 							
@@ -275,11 +287,11 @@ public class BuildTools {
 									} catch(Exception ex) {
 									}
 								}
-								write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true"), personal.equals("false")), projectName + "/" + projectName + "/pom.xml");
+								write(type.getPom(projectName, packageName, outerJars, wsdlJars, sourceOfWsdl.equals("true"), personal.equals("false"), lombok.equals("true"), xml.equals("true")), projectName + "/" + projectName + "/pom.xml");
 								
 								write(type.getBase64JS(), front + "/jquery.base64.js");
-								write(type.getRequestJS(projectName, port, model.equals("simpliy")), front + "/request.js");
-								write(type.getHtml(projectName, author, model.equals("simpliy"), personal.equals("false"), jQuery), front + "/" + projectName + ".html");
+								write(type.getRequestJS(projectName, port, model.equals("simpliy"), conversion.equals("entity")), front + "/request.js");
+								write(type.getHtml(projectName, author, model.equals("simpliy"), personal.equals("false"), jQuery, conversion.equals("entity")), front + "/" + projectName + ".html");
 								
 								System.exit(0);
 							} catch (Exception ex) {

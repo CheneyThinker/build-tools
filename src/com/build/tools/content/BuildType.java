@@ -100,7 +100,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getRequestJS(String projectName, String port, boolean model) {
+	public String getRequestJS(String projectName, String port, boolean model, boolean conversion) {
 		clear();
 		String ip = null;
 		try {
@@ -156,7 +156,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getHtml(String projectName, String author, boolean model, boolean personal, String jQuery) {
+	public String getHtml(String projectName, String author, boolean model, boolean personal, String jQuery, boolean conversion) {
 		clear();
 		builder
 		.append("<!DOCTYPE html>\n")
@@ -293,7 +293,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getPom(String projectName, String packageName, String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean personal) {
+	public String getPom(String projectName, String packageName, String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean personal, boolean lombok, boolean xml) {
 		clear();
 		builder
 		.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
@@ -330,6 +330,22 @@ public class BuildType {
 		   	.append("      <groupId>org.springframework.boot</groupId>\n")
 		   	.append("      <artifactId>spring-boot-configuration-processor</artifactId>\n")
 		   	.append("      <optional>true</optional>\n")
+		   	.append("    </dependency>\n");
+		}
+		if (lombok) {
+			builder
+			.append("    <dependency>\n")
+		   	.append("      <groupId>org.projectlombok</groupId>\n")
+		   	.append("      <artifactId>lombok</artifactId>\n")
+		   	.append("      <version>RELEASE</version>\n")
+		   	.append("    </dependency>\n");
+		}
+		if (xml) {
+			builder
+			.append("    <dependency>\n")
+		   	.append("      <groupId>com.fasterxml.jackson.dataformat</groupId>\n")
+		   	.append("      <artifactId>jackson-dataformat-xml</artifactId>\n")
+		   	.append("      <version>RELEASE</version>\n")
 		   	.append("    </dependency>\n");
 		}
 		if (!BuildUtils.isEmpty(outerJar)) {
@@ -676,11 +692,17 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getService(String projectName, String packageName, String author, boolean model, boolean personal) {
+	public String getService(String projectName, String packageName, String author, boolean model, boolean personal, boolean conversion) {
 		clear();
 		builder
 		.append("package com.").append(packageName).append(".service;\n")
-		.append("\n")
+		.append("\n");
+		if (conversion) {
+			builder
+			.append("import com.").append(packageName).append(".entity.").append(projectName).append(";\n")
+			.append("import com.").append(packageName).append(".entity.").append(projectName).append("Entity;\n");
+		}
+		builder
 		.append("import com.").append(packageName).append(".utils.").append(projectName).append("Utils;\n");
 		if (model) {
 			if (personal) {
@@ -689,7 +711,8 @@ public class BuildType {
 			}
 			builder
 			.append("import org.springframework.stereotype.Service;\n")
-			.append("\n");
+			.append("\n")
+			.append(conversion ? "import java.util.HashMap;\n" : "");
 		}
 		builder
 		.append("import java.util.Map;\n")
@@ -703,12 +726,14 @@ public class BuildType {
 		.append("public ").append(model ? "class" : "interface").append(" ").append(projectName).append("Service {\n")
 		.append("\n");
 		if (model) {
+			String firstLowerCase = firstLowerCase(projectName);
 			builder
-			.append("  public Map<String, Object> index(Map<String, Object> map) throws Exception {\n")
-			.append("    if (map.get(\"sign\").equals(").append(projectName).append("Utils.md5(\"").append(projectName).append(" By ").append(author).append("\"))) {\n");
+			.append("  public Map<String, Object> index(").append(conversion ? projectName.concat(" ").concat(firstLowerCase) : "Map<String, Object> map").append(") throws Exception {\n")
+			.append(conversion ? "    ".concat(projectName).concat("Entity ").concat(firstLowerCase).concat("Entity = ").concat(projectName).concat("Utils.conversion(").concat(firstLowerCase).concat(");\n") : "")
+			.append("    if (").append(conversion ? firstLowerCase.concat("Entity.getSign()") : "map.get(\"sign\")").append(".equals(").append(projectName).append("Utils.md5(\"").append(projectName).append(" By ").append(author).append("\"))) {\n");
 			if (personal) {
-				String firstLowerCase = firstLowerCase(projectName);
 				builder
+				.append(conversion ? "      Map<String, Object> map = new HashMap<>();\n" : "")
 				.append("      ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig = ").append(projectName).append("Utils.get").append(projectName).append("YMLConfig();\n")
 				.append("      ").append(projectName).append("YMLConfig.Cons cons = ").append(firstLowerCase).append("YMLConfig.getCons();\n")
 				.append("      map.put(\"projectName\", cons.getProjectName());\n")
@@ -723,8 +748,16 @@ public class BuildType {
 				.append("      map.put(\"major\", \"1.0\");\n");
 			}
 			builder
-			.append("      map.put(\"log\", ").append(projectName).append("Utils.readLog(map.remove(\"fileName\")));\n")
-			.append("      map.put(\"logInfo\", ").append(projectName).append("Utils.getLogInfo());\n")
+			.append("      map.put(\"log\", ").append(projectName).append("Utils.readLog(").append(conversion ? firstLowerCase.concat("Entity.getFileName()") : "map.remove(\"fileName\")").append("));\n")
+			.append("      map.put(\"logInfo\", ").append(projectName).append("Utils.getLogInfo());\n");
+			if (conversion) {
+				builder
+				.append("      map.put(\"methodOf").append(projectName).append("\", ").append(firstLowerCase).append("Entity.getMethodOf").append(projectName).append("());\n")
+				.append("      map.put(\"sign\", ").append(firstLowerCase).append("Entity.getSign());\n")
+				.append("      map.put(\"author\", ").append(firstLowerCase).append("Entity.getAuthor());\n")
+				.append("      map.put(\"fileName\", ").append(firstLowerCase).append("Entity.getFileName());\n");
+			}
+			builder
 			.append("      return map;\n")
 			.append("    } else {\n")
 			.append("      return null;\n")
@@ -796,7 +829,7 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getFilter(String projectName, String packageName, String author, boolean personal) {
+	public String getFilter(String projectName, String packageName, String author, boolean personal, boolean xml, boolean conversion) {
 		clear();
 		builder
 		.append("package com.").append(packageName).append(".filter;\n")
@@ -824,7 +857,7 @@ public class BuildType {
 		.append("import javax.servlet.http.HttpServletRequest;\n")
 		.append("import javax.servlet.http.HttpServletResponse;\n")
 		.append("import java.io.IOException;\n")
-		.append("import java.util.Map;\n")
+		.append(conversion ? "" : "import java.util.Map;\n")
 		.append("\n")
 		.append("/**\n")
 		.append(" * @description\n")
@@ -871,14 +904,22 @@ public class BuildType {
 		//.append("        }\n")
 		//.append("        bufferedReader.close();\n")
 		//.append("      }\n")
-		.append("      //Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(request.getParameter(\"data\"));\n")
-		.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMap(request.getParameter(\"data\"));\n")
-		.append("      /*if (map.containsKey(\"authToken\") && map.containsKey(\"systemId\")) {\n")
-		.append("        String authToken = (String) map.remove(\"authToken\");\n")
-		.append("        String systemId = (String) map.remove(\"systemId\");\n")
-		.append("      }*/\n")
-		.append("      logger.error(").append(projectName).append("Utils.toJson(map));\n")
-		.append("      request.setAttribute(\"data\", map);\n")
+		.append("      String parameter = request.getParameter(\"data\");\n")
+		.append("      logger.error(parameter);\n");
+		if (conversion) {
+			builder
+			.append("      request.setAttribute(\"data\", ").append(projectName).append("Utils.getEntity(parameter, Class.forName(\"com.").append(packageName).append(".entity.\".concat(request.getParameter(\"model\"))), false));\n");
+		} else {
+			builder
+			.append("      //Map<String, Object> map = ").append(projectName).append("Utils.getMapFromBase64(parameter").append(xml ? ", false" : "").append(");\n")
+			.append("      Map<String, Object> map = ").append(projectName).append("Utils.getMap(parameter").append(xml ? ", false" : "").append(");\n")
+			.append("      /*if (map.containsKey(\"authToken\") && map.containsKey(\"systemId\")) {\n")
+			.append("        String authToken = (String) map.remove(\"authToken\");\n")
+			.append("        String systemId = (String) map.remove(\"systemId\");\n")
+			.append("      }*/\n")
+			.append("      request.setAttribute(\"data\", map);\n");
+		}
+		builder
 		.append("      filterChain.doFilter(request, response);\n")
 		.append("    } catch (Exception e) {\n")
 		.append("      ServletOutputStream out = null;\n")
@@ -909,12 +950,19 @@ public class BuildType {
 		return builder.toString();
 	}
 	
-	public String getUtils(String projectName, String packageName, String author, boolean model, boolean personal) {
+	public String getUtils(String projectName, String packageName, String author, boolean model, boolean personal, boolean xml, boolean conversion) {
 		clear();
 		builder
 		.append("package com.").append(packageName).append(".utils;\n")
-		.append("\n")
-		.append("import com.fasterxml.jackson.databind.ObjectMapper;\n");
+		.append("\n");
+		if (conversion) {
+			builder
+			.append("import com.").append(packageName).append(".entity.").append(projectName).append(";\n");
+		}
+		builder
+		.append("import com.fasterxml.jackson.databind.ObjectMapper;\n")
+		.append("import com.fasterxml.jackson.databind.SerializationFeature;\n")
+		.append(xml ? "import com.fasterxml.jackson.dataformat.xml.XmlMapper;\n" : "");
 		if (personal) {
 			builder
 			.append("import com.").append(packageName).append(".config.").append(projectName).append("YMLConfig;\n")
@@ -951,16 +999,17 @@ public class BuildType {
 		.append(" */\n")
 		.append("public final class ").append(projectName).append("Utils {\n")
 		.append("\n");
+		String firstLowerCase = firstLowerCase(projectName);
 		if (personal) {
 			builder
-			.append("  private static ").append(projectName).append("YMLConfig ").append(firstLowerCase(projectName)).append("YMLConfig;\n")
+			.append("  private static ").append(projectName).append("YMLConfig ").append(firstLowerCase).append("YMLConfig;\n")
 			.append("  private static RestTemplate restTemplate;\n");
 		}
 		builder
 		.append("  private static ObjectMapper mapper = new ObjectMapper();\n")
+		.append(xml ? "  private static XmlMapper xmlMapper = new XmlMapper();\n" : "")
 		.append("\n");
 		if (personal) {
-			String firstLowerCase = firstLowerCase(projectName);
 			builder
 			.append("  public static void installRestTemplate(RestTemplate _restTemplate) {\n")
 			.append("    if (StringUtils.isEmpty(restTemplate)) {\n")
@@ -980,40 +1029,61 @@ public class BuildType {
 			.append("\n");
 		}
 		if (model) {
-			builder
-			.append("  public static Object invoke(Object data, Object service) throws Exception {\n")
-			.append("    Map<String, Object> map = (Map<String, Object>) data;\n")
-			.append("    Method method = service.getClass().getMethod((String) map.").append(personal ? "get" : "remove").append("(\"methodOf").append(projectName).append("\"), Map.class);\n")
-			.append("    return method.invoke(service, map);\n")
-			.append("  }\n")
-			.append("\n");
+			if (conversion) {
+				builder
+				.append("  public static Object invoke(Object data, Object service) throws Exception {\n")
+				.append("    ").append(projectName).append(" ").append(firstLowerCase(projectName)).append(" = conversion(data);\n")
+				.append("    Method method = service.getClass().getMethod(").append(firstLowerCase(projectName)).append(".getMethodOf").append(projectName).append("(), ").append(projectName).append(".class);\n")
+				.append("    return method.invoke(service, ").append(firstLowerCase(projectName)).append(");\n")
+				.append("  }\n")
+				.append("\n");
+			} else {
+				builder
+				.append("  public static Object invoke(Object data, Object service) throws Exception {\n")
+				.append("    Map<String, Object> map = conversion(data);\n")
+				.append("    Method method = service.getClass().getMethod((String) map.").append(personal ? "get" : "remove").append("(\"methodOf").append(projectName).append("\"), Map.class);\n")
+				.append("    return method.invoke(service, map);\n")
+				.append("  }\n")
+				.append("\n");
+			}
 		}
 		builder
-		.append("  public static <T> T getEntity(String json, Class<T> clazz) throws Exception {\n")
-		.append("    return getEntity(json, clazz, false);\n")
+		.append("  public static <T> T getEntity(String content, Class<T> clazz").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
+		.append("    return getEntity(content, clazz, false").append(xml ? ", xml" : "").append(");\n")
 		.append("  }\n")
 		.append("\n")
-		.append("  public static <T> T getEntityFromBase64(String json, Class<T> clazz) throws Exception {\n")
-		.append("    return getEntity(json, clazz, true);\n")
+		.append("  public static <T> T getEntityFromBase64(String content, Class<T> clazz").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
+		.append("    return getEntity(content, clazz, true").append(xml ? ", xml" : "").append(");\n")
 		.append("  }\n")
 		.append("\n")
-		.append("  public static Map<String, Object> getMap(String json) throws Exception {\n")
-		.append("    return getEntity(json, Map.class);\n")
+		.append("  public static Map<String, Object> getMap(String content").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
+		.append("    return getEntity(content, Map.class").append(xml ? ", xml" : "").append(");\n")
 		.append("  }\n")
 		.append("\n")
-		.append("  public static Map<String, Object> getMapFromBase64(String json) throws Exception {\n")
-		.append("    return getEntityFromBase64(json, Map.class);\n")
+		.append("  public static Map<String, Object> getMapFromBase64(String content").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
+		.append("    return getEntityFromBase64(content, Map.class").append(xml ? ", xml" : "").append(");\n")
 		.append("  }\n")
 		.append("\n")
-		.append("  private static <T> T getEntity(String json, Class<T> clazz, boolean fromBase64) throws Exception {\n")
-		.append("    if (StringUtils.isEmpty(json)) {\n")
+		.append("  private static <T> T getEntity(String content, Class<T> clazz, boolean fromBase64").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
+		.append("    if (StringUtils.isEmpty(content)) {\n")
 		.append("      throw new Exception(\"Argument Not Allowed Empty!\");\n")
 		.append("    }\n")
 		.append("    if (fromBase64) {\n")
-		.append("      byte[] bytes = Base64.getDecoder().decode(json);\n")
-		.append("      json = new String(bytes, \"UTF-8\");\n")
-		.append("    }\n")
-		.append("    return mapper.readValue(json, clazz);\n")
+		.append("      byte[] bytes = Base64.getDecoder().decode(content);\n")
+		.append("      content = new String(bytes, \"UTF-8\");\n")
+		.append("    }\n");
+		if (xml) {
+			builder
+			.append("    if (xml) {\n")
+			.append("      try {\n")
+			.append("        return xmlMapper.readValue(content, clazz);\n")
+			.append("      } catch (Exception e) {\n")
+			.append("        return null;\n")
+			.append("      }\n")
+			.append("    }\n");
+		}
+		builder
+		.append("    return mapper.readValue(content, clazz);\n")
 		.append("  }\n")
 		.append("\n");
 		if (personal) {
@@ -1026,7 +1096,7 @@ public class BuildType {
 			.append("    HttpHeaders headers = new HttpHeaders();\n")
 			.append("    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);\n")
 			.append("    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();\n")
-			.append(model ? "    String url = ".concat(firstLowerCase(projectName)).concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"));\n") : "")
+			.append(model ? "    String url = ".concat(firstLowerCase).concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"));\n") : "")
 			.append("    map.setAll(params);\n")
 			.append("    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);\n")
 			.append("    return restTemplate.postForObject(url, formEntity, clazz);\n")
@@ -1035,20 +1105,35 @@ public class BuildType {
 			.append("  public static <T> T postJson(").append(model ? "" : "String url, ").append("Map<String, Object> params, Class<T> clazz) {\n")
 			.append("    HttpHeaders headers = new HttpHeaders();\n")
 			.append("    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);\n")
-			.append("    return restTemplate.postForObject(").append(model ? firstLowerCase(projectName).concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"))") : "url").append(", new HttpEntity<String>(toJson(params), headers), clazz);\n")
+			.append("    return restTemplate.postForObject(").append(model ? firstLowerCase.concat("YMLConfig.getInter().get(params.remove(\"methodOf").concat(projectName).concat("\"))") : "url").append(", new HttpEntity<String>(toJson(params), headers), clazz);\n")
 			.append("  }\n")
 			.append("\n");
 		}
 		builder
 		.append("  public static String toJson(Object value) {\n")
 		.append("    try {\n")
+		.append("      mapper.enable(SerializationFeature.INDENT_OUTPUT);\n")
 		.append("      return mapper.writeValueAsString(value);\n")
 		.append("    } catch (Exception e) {\n")
 		.append("      //It's impossible to happen\n")
 		.append("      return null;\n")
 		.append("    }\n")
 		.append("  }\n")
-		.append("\n")
+		.append("\n");
+		if (xml) {
+			builder
+			.append("  public static String toXml(Object value) {\n")
+			.append("    try {\n")
+			.append("      xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);\n")
+			.append("      return xmlMapper.writeValueAsString(value);\n")
+			.append("    } catch (Exception e) {\n")
+			.append("      //It's impossible to happen\n")
+			.append("      return null;\n")
+			.append("    }\n")
+			.append("  }\n")
+			.append("\n");
+		}
+		builder
 		.append("  public static <T> T conversion(Object value) {\n")
 		.append("    return (T) value;\n")
 		.append("  }\n")
@@ -1292,6 +1377,84 @@ public class BuildType {
 		.append("    <appender-ref ref=\"").append(projectName).append("Log\" />\n")
 		.append("  </logger>\n")
 		.append("</configuration>").toString();
+	}
+	
+	public String getRootEntity(String projectName, String packageName, String author) {
+		clear();
+		builder
+		.append("package com.").append(packageName).append(".entity;\n")
+		.append("\n")
+		.append("/**\n")
+		.append(" * @description\n")
+		.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
+		.append(" * @date ").append(date).append("\n")
+		.append(" */\n")
+		.append("public interface ").append(projectName).append(" {\n")
+		.append("\n")
+		.append("  String getMethodOf").append(projectName).append("();\n")
+		.append("\n")
+		.append("}");
+		return builder.toString();
+	}
+	
+	public String getProjectEntity(String projectName, String packageName, String author, boolean lombok) {
+		clear();
+		builder
+		.append("package com.").append(packageName).append(".entity;\n")
+		.append("\n")
+		.append(lombok ? "import lombok.Data;\n\n" : "")
+		.append("/**\n")
+		.append(" * @description\n")
+		.append(" * @author ").append(BuildUtils.isEmpty(author) ? "admin" : author).append("\n")
+		.append(" * @date ").append(date).append("\n")
+		.append(" */\n")
+		.append(lombok ? "@Data\n" : "")
+		.append("public class ").append(projectName).append("Entity implements ").append(projectName).append(" {\n")
+		.append("\n")
+		.append("  private String methodOf").append(projectName).append(";\n")
+		.append("  private String sign;\n")
+		.append("  private String author;\n")
+		.append("  private String fileName;\n");
+		if (!lombok) {
+			builder
+			.append("\n")
+			.append("  public String getMethodOf").append(projectName).append("() {\n")
+			.append("    return methodOf").append(projectName).append(";\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public void setMethodOf").append(projectName).append("(String methodOf").append(projectName).append(") {\n")
+			.append("    this.methodOf").append(projectName).append(" = methodOf").append(projectName).append(";\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public String getSign() {\n")
+			.append("    return sign;\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public void setSign(String sign) {\n")
+			.append("    this.sign = sign;\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public String getMethodOfCivilAffairs() {\n")
+			.append("    return author;\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public void setAuthor(String author) {\n")
+			.append("    this.author = author;\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public String getFileName() {\n")
+			.append("    return fileName;\n")
+			.append("  }\n")
+			.append("\n")
+			.append("  public void setFileName(String fileName) {\n")
+			.append("    this.fileName = fileName;\n")
+			.append("  }\n")
+			.append("\n");
+		}
+		builder
+		.append("\n")
+		.append("}");
+		return builder.toString();
 	}
 	
 	private void clear() {
