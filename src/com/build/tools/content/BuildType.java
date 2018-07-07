@@ -152,6 +152,20 @@ public class BuildType {
 		.append("\n")
 		.append("function getBase64Json(").append(model ? "" : "handler, ").append("data, success, error) {\n")
 		.append("  get(").append(model ? "" : "handler, ").append("{data: $.base64.btoa(JSON.stringify(data))}, success, error)\n")
+		.append("}\n")
+		.append("\n")
+		.append("function uploadImage(inputTarget, imageTarget) {\n")
+		.append("  var files = inputTarget.files;\n")
+		.append("  var file = files[0];\n")
+		.append("  var reader = new FileReader();\n")
+		.append("  reader.onload = function() {\n")
+		.append("    document.getElementById(imageTarget.id).src = this.result;\n")
+		.append("    localStorage.setItem(imageTarget.id, this.result);\n")
+		.append("  };\n")
+		.append("  reader.readAsDataURL(file);\n")
+		.append("  //reader.readAsBinaryString(file);\n")
+		.append("  //reader.readAsText(file, 'UTF-8');\n")
+		.append("  //reader.reader.readAsArrayBuffer(file);\n")
 		.append("}");
 		return builder.toString();
 	}
@@ -184,6 +198,11 @@ public class BuildType {
 		.append("    </style>\n")
 		.append("  </head>\n")
 		.append("  <body>\n")
+		.append("    <center>\n")
+		.append("      <image id=\"fileThumbnail\" />\n")
+		.append("      <input type=\"file\" id=\"file\" onchange=\"uploadImage(this, fileThumbnail);\" />\n")
+		.append("      <input type=\"submit\" id=\"submit\" name=\"submit\" />\n")
+		.append("    </center>\n")
 		.append("    <h1><center>Welcome to ").append(projectName).append("</center></h1>\n")
 		.append("    <table border=\"1\" align=\"center\" id=\"project\">\n")
 		.append("    </table>\n");
@@ -244,6 +263,20 @@ public class BuildType {
 		.append("  <script>\n")
 		.append("    $(\n")
 		.append("      function() {\n")
+		.append("        $('#submit').click(function() {\n")
+		.append("          var content = localStorage.getItem('fileThumbnail');\n")
+		.append("          postJson\n")
+		.append("          (\n")
+		.append("            {\n")
+		.append("              methodOf").append(projectName).append(": 'upload',\n")
+		.append("              content: content\n")
+		.append("            },\n")
+		.append("            function(res) {\n")
+		.append("              localStorage.clear();\n")
+		.append("            }\n")
+		.append("          )\n")
+		.append("        })\n")
+		.append("\n")
 		.append("        //postBase64Json\n")
 		.append("        postJson\n")
 		.append("        (\n");
@@ -417,6 +450,11 @@ public class BuildType {
 			.append("    major: 1.0\n")
 			.append("  inter: #第三方接口定义\n")
 			.append("    index: http://").append(ip).append(":").append(port).append("/").append(projectName).append(model ? "/invoke" : "/");
+			//.append("\n")
+			//.append("logging:\n")
+			//.append("  level:\n")
+			//.append("    com.").append(packageName).append(".filter: error\n")
+			//.append("  file: logs\\").append(projectName).append(".log");
 		}
 		return builder.toString();
 	}
@@ -626,7 +664,7 @@ public class BuildType {
 		.append("public final class ResponseGenerator {\n")
 		.append("\n")
 		.append("  private static final String DEFAULT_YES = \"YES\";\n")
-		.append("  private static final String format = \"\\nclass:\\t{}\\nmethod:\\t{}\\nline:\\t{}\\n\";\n")
+		.append("  private static final String format = \"class:{}\\tmethod:{}\\tline:{}\";\n")
 		.append("\n")
 		.append("  public static Response genYes() {\n")
 		.append("    return new Response()\n")
@@ -712,7 +750,10 @@ public class BuildType {
 			builder
 			.append("import org.springframework.stereotype.Service;\n")
 			.append("\n")
-			.append(conversion ? "import java.util.HashMap;\n" : "");
+			.append(conversion ? "import java.util.HashMap;\n" : "")
+			.append("//import java.io.BufferedOutputStream;\n")
+			.append("//import java.io.DataOutputStream;\n")
+			.append("//import java.io.FileOutputStream;\n");
 		}
 		builder
 		.append("import java.util.Map;\n")
@@ -728,6 +769,18 @@ public class BuildType {
 		if (model) {
 			String firstLowerCase = firstLowerCase(projectName);
 			builder
+			.append("  public Map<String, Object> upload(Map<String, Object> map) throws Exception {\n")
+			.append("    String path = System.getProperty(\"user.dir\").concat(\"\\\\upload\\\\temp.png\"));\n")
+			.append("    String content = (String) map.get(\"content\");\n")
+			.append("    int len = content.indexOf(\",\");\n")
+			.append("    ").append(projectName).append("Utils.base64ToImage(content.substring(len + 1), path);\n")
+			.append("    /*String binaryString = (String) map.get(\"content\");\n")
+			.append("    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));\n")
+			.append("    out.writeBytes(binaryString);\n")
+			.append("    out.close();*/\n")
+			.append("    return map;\n")
+			.append("  }\n")
+			.append("\n")
 			.append("  public Map<String, Object> index(").append(conversion ? projectName.concat(" ").concat(firstLowerCase) : "Map<String, Object> map").append(") throws Exception {\n")
 			.append(conversion ? "    ".concat(projectName).concat("Entity ").concat(firstLowerCase).concat("Entity = ").concat(projectName).concat("Utils.conversion(").concat(firstLowerCase).concat(");\n") : "")
 			.append("    if (").append(conversion ? firstLowerCase.concat("Entity.getSign()") : "map.get(\"sign\")").append(".equals(").append(projectName).append("Utils.md5(\"").append(projectName).append(" By ").append(author).append("\"))) {\n");
@@ -979,6 +1032,7 @@ public class BuildType {
 			.append("import org.springframework.web.client.RestTemplate;\n");
 		}
 		builder
+		.append("import sun.misc.BASE64Decoder;\n")
 		.append("\n")
 		.append("import java.io.*;\n")
 		.append(model ? "import java.lang.reflect.Method;\n" : "")
@@ -1048,6 +1102,30 @@ public class BuildType {
 			}
 		}
 		builder
+		.append("  public static void base64ToImage(String base64, String filePath) {\n")
+		.append("    if (!StringUtils.isEmpty(base64)) {\n")
+		.append("      BASE64Decoder decoder = new BASE64Decoder();\n")
+		.append("      OutputStream out = null;\n")
+		.append("      try {\n")
+		.append("        byte[] bytes = decoder.decodeBuffer(base64);\n")
+		.append("        for (int i = 0, j = bytes.length; i < j; ++i) {\n")
+		.append("          if (bytes[i] < 0) {\n")
+		.append("            bytes[i] += 256;\n")
+		.append("          }\n")
+		.append("        }\n")
+		.append("        out = new FileOutputStream(filePath);\n")
+		.append("        out.write(bytes);\n")
+		.append("        out.flush();\n")
+		.append("      } catch (IOException e) {\n")
+		.append("      } finally {\n")
+		.append("        try {\n")
+		.append("          out.close();\n")
+		.append("        } catch (IOException e) {\n")
+		.append("        }\n")
+		.append("      }\n")
+		.append("    }\n")
+		.append("  }\n")
+		.append("\n")
 		.append("  public static <T> T getEntity(String content, Class<T> clazz").append(xml ? ", boolean xml" : "").append(") throws Exception {\n")
 		.append("    return getEntity(content, clazz, false").append(xml ? ", xml" : "").append(");\n")
 		.append("  }\n")
@@ -1180,7 +1258,7 @@ public class BuildType {
 		.append("\n")
 		.append("  public static Map<Short, String> readLog(Object fileName) {\n")
 		.append("    try {\n")
-		.append("      BufferedReader reader = new BufferedReader(new FileReader(new File(\"log\\\\\".concat(fileName.toString()))));\n")
+		.append("      BufferedReader reader = new BufferedReader(new FileReader(new File(\"logs/\".concat(fileName.toString()))));\n")
 		.append("      String temp;\n")
 		.append("      Map<Short, String> map = new HashMap<>();\n")
 		.append("      short i = 0;\n")
@@ -1194,7 +1272,7 @@ public class BuildType {
 		.append("  }\n")
 		.append("\n")
 		.append("  public static Map<String, Long> getLogInfo() {\n")
-		.append("    File file = new File(\"log\");\n")
+		.append("    File file = new File(\"logs\");\n")
 		.append("    File[] files = file.listFiles();\n")
 		.append("    Map<String, Long> logInfo = new HashMap<>();\n")
 		.append("    for (File f : files) {\n")
@@ -1359,9 +1437,9 @@ public class BuildType {
 		.append("    <appender-ref ref=\"CONSOLE_LOG\" />\n")
 		.append("  </root>\n")
 		.append("  <appender name=\"").append(projectName).append("Log\" class=\"ch.qos.logback.core.rolling.RollingFileAppender\">\n")
-		.append("    <File>log\\").append(projectName).append(".log</File>\n")
+		.append("    <File>logs/").append(projectName).append(".log</File>\n")
 		.append("    <rollingPolicy class=\"ch.qos.logback.core.rolling.TimeBasedRollingPolicy\">\n")
-		.append("      <fileNamePattern>log\\").append(projectName).append(".%d.%i.log</fileNamePattern>\n")
+		.append("      <fileNamePattern>logs/").append(projectName).append(".%d.%i.log</fileNamePattern>\n")
 		.append("      <timeBasedFileNamingAndTriggeringPolicy class=\"ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP\">\n")
 		.append("        <maxFileSize>64 KB</maxFileSize>\n")
 		.append("      </timeBasedFileNamingAndTriggeringPolicy>\n")
