@@ -1,0 +1,44 @@
+package com.%package%.core;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class Response {
+
+  private Integer code;
+  private String msg;
+  private Object data;
+
+  public Integer getCode() {
+    return code;
+  }
+
+  public Response setCode(Integer _code) {
+    code = _code;
+    return this;
+  }
+
+  public String getMsg() {
+    return msg;
+  }
+
+  public Response setMsg(String _msg) {
+    msg = _msg;
+    return this;
+  }
+
+  public Object getData() {
+    return data;
+  }
+
+  public Response setData(Object _data) {
+    data = _data;
+    return this;
+  }
+
+}

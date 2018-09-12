@@ -1,0 +1,11 @@
+server:
+  port: %port%
+%prefix%:
+  cons:
+    projectName: %project%
+    version: PRO
+    major: 1.0.0
+    logPath: logs/
+  inter:
+    index: http://127.0.0.1:%port%/%project%/index
+    refresh%project%: http://127.0.0.1:%port%/%project%/refresh%project%

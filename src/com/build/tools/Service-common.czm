@@ -1,0 +1,15 @@
+package com.%package%.service;
+
+import com.%package%.exception.%project%Exception;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public interface %project%Service {
+
+  Object index(Object data) throws %project%Exception;
+  void refresh%project%(Object data) throws %project%Exception;
+
+}

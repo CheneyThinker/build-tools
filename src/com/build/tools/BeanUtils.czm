@@ -1,0 +1,69 @@
+package com.%package%.utils;
+
+import org.springframework.util.StringUtils;
+
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class BeanUtils {
+
+  public final static Map<String, Object> toMap(final Object entity) throws Exception {
+    if(StringUtils.isEmpty(entity)) {
+      return null;
+    }
+    Map<String, Object> map = new HashMap<>();
+    BeanInfo beanInfo = Introspector.getBeanInfo(entity.getClass());
+    PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+    for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+      String key = propertyDescriptor.getName();
+      if (key.equalsIgnoreCase("class")) {
+        continue;
+      }
+      Method getter = propertyDescriptor.getReadMethod();
+      Object value = getter != null ? getter.invoke(entity) : null;
+      map.put(key, value);
+    }
+    return map;
+  }
+
+  public final static <T> T toEntity(final Map<String, Object> map, final Class<T> clazz) throws Exception {
+    if(StringUtils.isEmpty(map)) {
+      return null;
+    }
+    T t = clazz.newInstance();
+    BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+    PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+    for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+      String key = propertyDescriptor.getName();
+      if (key.equalsIgnoreCase("class")) {
+        continue;
+      }
+      Method setter = propertyDescriptor.getWriteMethod();
+      if (setter != null) {
+        setter.invoke(t, map.get(key));
+      }
+    }
+    return t;
+  }
+  
+  public final static String toXml(final Map<String, Object> map) {
+    StringBuffer buffer = new StringBuffer();
+    for (String key : map.keySet()) {
+      buffer.append("<").append(key).append(">");
+      Object object = map.get(key);
+      buffer.append(object instanceof Map ? toXml((Map<String, Object>) object) : object);
+      buffer.append("</").append(key).append(">");
+    }
+    return buffer.toString();
+  }
+
+}

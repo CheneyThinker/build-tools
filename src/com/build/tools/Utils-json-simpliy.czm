@@ -1,0 +1,213 @@
+package com.%package%.utils;
+
+import com.%package%.config.%project%YMLConfig;
+import com.%package%.exception.%project%Exception;
+import com.%package%.service.%project%Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class %project%Utils {
+
+  private static RestTemplate restTemplate;
+  private static %project%Service %small%Service;
+  private static %project%YMLConfig %small%YMLConfig;
+  private static final ObjectMapper jsonMapper = new ObjectMapper();
+
+  public static final void installRestTemplate(final RestTemplate _restTemplate) {
+    if (StringUtils.isEmpty(restTemplate)) {
+      restTemplate = _restTemplate;
+    }
+  }
+
+  public static final void install%project%Service(final %project%Service _%small%Service) {
+    if (StringUtils.isEmpty(%small%Service)) {
+      %small%Service = _%small%Service;
+    }
+  }
+
+  public static final void install%project%YMLConfig(final %project%YMLConfig _%small%YMLConfig) {
+    if (StringUtils.isEmpty(%small%YMLConfig)) {
+      %small%YMLConfig = _%small%YMLConfig;
+    }
+  }
+
+  public static final %project%YMLConfig get%project%YMLConfig() {
+    return %small%YMLConfig;
+  }
+  
+  public static final ObjectMapper getJsonMapper() {
+    return jsonMapper;
+  }
+
+  public static final Object invoke(final Object data) throws %project%Exception {
+    try {
+      Map<String, Object> map = (Map<String, Object>) data;
+      Method method = %small%Service.getClass().getDeclaredMethod(map.get("methodOf%project%").toString(), Map.class);
+      return method.invoke(%small%Service, map);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      if (e.getCause() instanceof %project%Exception) {
+        throw (%project%Exception) e.getCause();
+      } else {
+        throw new %project%Exception(e.getMessage());
+      }
+    }
+  }
+
+  public static final <T, P> T exchange(final String url, final P body, final HttpMethod method, final Class<T> clazz) throws Exception {
+    RequestEntity<P> entity = new RequestEntity<>(body, method, new URI(url));
+    return restTemplate.exchange(entity, clazz).getBody();
+  }
+
+  public static final <T> T get(final String url, final Class<T> clazz) {
+    return restTemplate.getForObject(url, clazz);
+  }
+
+  public static final <T> T post(final Map<String, Object> params, final Class<T> clazz, final MediaType mediaType) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(mediaType);
+    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+    String url = %small%YMLConfig.getInter().get(params.remove("methodOf%project%"));
+    map.setAll(params);
+    HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);
+    return restTemplate.postForObject(url, formEntity, clazz);
+  }
+
+  public static final <T> T post(final Map<String, Object> params, final Class<T> clazz) {
+    return post(params, clazz, MediaType.APPLICATION_FORM_URLENCODED);
+  }
+
+  public static final <T> T postMultiPart(final Map<String, Object> params, final Class<T> clazz) {
+    return post(params, clazz, MediaType.MULTIPART_FORM_DATA);
+  }
+
+  public static final <T> T postJson(final Map<String, Object> params, final Class<T> clazz) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+    return restTemplate.postForObject(%small%YMLConfig.getInter().get(params.remove("methodOf%project%")), new HttpEntity<String>(toJson(params), headers), clazz);
+  }
+
+  public static final Map<String, Object> getMap(final String content) throws %project%Exception {
+    return getEntity(content, Map.class);
+  }
+
+  public static final <T> T getEntity(final String content, final Class<T> clazz) throws %project%Exception {
+    checkParameter(content);
+    try {
+      return jsonMapper.readValue(content, clazz);
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  public static final <T> List<T> getList(final String content) throws %project%Exception {
+    checkParameter(content);
+    try {
+      return jsonMapper.readValue(content, new TypeReference<List<T>>(){});
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  public static final String toJson(final Object data) {
+    try {
+      return jsonMapper.writeValueAsString(data);
+    } catch (JsonProcessingException e) {
+      //It's impossible to happen
+      return null;
+    }
+  }
+  
+  public static final <T> T conversion(final Object value) {
+    return (T) value;
+  }
+
+  public static final void checkParameter(final Object parameter) throws %project%Exception {
+    if (StringUtils.isEmpty(parameter)) {
+      throw new %project%Exception("Argument Not Allowed Empty!");
+    }
+  }
+
+  public static final String md5(final String content) {
+    try {
+      MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+      byte[] bytes = messageDigest.digest(content.getBytes("UTF-8"));
+      StringBuilder builder = new StringBuilder();
+      for (byte b : bytes) {
+        int number = b & 0xff;
+        String str = Integer.toHexString(number);
+        if (str.length() == 1) {
+          builder.append("0");
+        }
+        builder.append(str);
+      }
+      return builder.toString();
+    } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+      return null;
+    }
+  }
+
+  public static final String decode(final String content) {
+    char[] chars = content.toCharArray();
+    byte[] bytes = new byte[chars.length];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = (byte)chars[i];
+    }
+    return new String(bytes);
+  }
+
+  public static final Map<Short, String> readLog(final Object fileName) {
+    BufferedReader reader = null;
+    try {
+      reader = new BufferedReader(new FileReader(new File(%small%YMLConfig.getCons().getLogPath().concat(fileName.toString()))));
+      String content;
+      Map<Short, String> map = new HashMap<>();
+      Short count = 0;
+      while (!StringUtils.isEmpty((content = reader.readLine()))) {
+        int index = content.indexOf(':', 15);
+        map.put(count++, "<pre>".concat(content.substring(0, 14)).concat("\n").concat(content.substring(15, index)).concat("</pre></td><td>").concat(content.substring(index + 1)));
+      }
+      return map;
+    } catch (IOException e) {
+      return null;
+    } finally {
+      try {
+        if (!StringUtils.isEmpty(reader)) {
+          reader.close();
+        }
+      } catch (IOException e) {
+      }
+    }
+  }
+
+  public static final Map<String, Long> getLogInfo() {
+    File file = new File(%small%YMLConfig.getCons().getLogPath());
+    File[] files = file.listFiles();
+    Map<String, Long> logInfo = new HashMap<>();
+    for (File f : files) {
+      logInfo.put(f.getName(), f.length());
+    }
+    return logInfo;
+  }
+
+}

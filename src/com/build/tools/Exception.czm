@@ -1,0 +1,37 @@
+package com.%package%.exception;
+
+import com.%package%.core.ResponseCode;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class %project%Exception extends Exception {
+
+  private ResponseCode responseCode;
+  private Object data;
+
+  public %project%Exception(String msg) {
+    this(ResponseCode.BAD_REQUEST, msg);
+  }
+
+  public %project%Exception(ResponseCode _responseCode, String msg) {
+    this(_responseCode, null, msg);
+  }
+
+  public %project%Exception(ResponseCode _responseCode, Object _data, String msg) {
+    super(msg);
+    responseCode = _responseCode;
+    data = _data;
+  }
+
+  public Integer getResponseCode() {
+    return responseCode.getCode();
+  }
+
+  public Object getData() {
+    return data;
+  }
+
+}

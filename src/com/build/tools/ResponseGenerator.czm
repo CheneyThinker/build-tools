@@ -1,0 +1,39 @@
+package com.%package%.core;
+
+import com.%package%.exception.%project%Exception;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class ResponseGenerator {
+
+  private static final Logger logger = LoggerFactory.getLogger(ResponseGenerator.class);
+
+  public static final Response genOk() {
+    return new Response()
+        .setCode(ResponseCode.OK.getCode())
+        .setMsg("OK");
+  }
+
+  public static final Response genOk(Object data) {
+    return genOk()
+        .setData(data);
+  }
+
+  public static final Response genNo(%project%Exception %small%Exception) {
+    StackTraceElement[] stackTraceElements = %small%Exception.getStackTrace();
+    for (StackTraceElement stackTraceElement : stackTraceElements) {
+      if (stackTraceElement.toString().startsWith("com.%package%"))
+        logger.error("class:{} method:{} lineNumber:{}", stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getLineNumber());
+    }
+    return new Response()
+        .setCode(%small%Exception.getResponseCode())
+        .setMsg(%small%Exception.getMessage())
+        .setData(%small%Exception.getData());
+  }
+
+}

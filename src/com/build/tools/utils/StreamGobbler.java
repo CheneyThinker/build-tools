@@ -7,14 +7,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-public class StreamGobbler extends Thread {
-	
-	InputStream is;
-	String type;
-	OutputStream os;
-	
-	public StreamGobbler(InputStream is, String type) {
-		this(is, type, null);
+public final class StreamGobbler extends Thread {
+  
+  private InputStream is;
+  private String type;
+  private OutputStream os;
+  
+  public StreamGobbler(InputStream is, String type) {
+    this(is, type, null);
 	}
 	
 	public StreamGobbler(InputStream is, String type, OutputStream redirect) {
@@ -36,7 +36,7 @@ public class StreamGobbler extends Thread {
 			while ( (line = br.readLine()) != null) {
 				if (pw != null)
 					pw.println(line);
-				System.out.println(type + ":" + line);
+				System.out.println(type.concat(":").concat(line));
 			}
 			if (pw != null)
 				pw.flush();
@@ -56,4 +56,5 @@ public class StreamGobbler extends Thread {
 			}
 		}
 	}
+	
 }

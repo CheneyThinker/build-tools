@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>%project%</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        text-align: center;
+        word-wrap: break-word;
+        word-break: break-all;
+        font-size: 0.5pt;
+      }
+      thead {
+        background-color: #E9F3FF;
+      }
+      .key {
+        width: 300px;
+      }
+      .log {
+        width: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><center>Welcome to %project%</center></h1>
+    <table border="1" align="center" id="project">
+    </table>
+    <h1><center>Inter Of %project%</center></h1>
+    <table border="1" align="center">
+      <thead>
+        <tr>
+          <th class='key'>key</th>
+          <th>value</th>
+        </tr>
+      </thead>
+      <tbody id="inter">
+      </tbody>
+    </table>
+    <h1><center>Cons Of %project%</center></h1>
+    <table border="1" align="center">
+      <thead>
+        <tr>
+          <th class='key'>key</th>
+          <th>value</th>
+        </tr>
+      </thead>
+      <tbody id="cons">
+      </tbody>
+    </table>
+    <h1><center>LogInfo Of %project%</center></h1>
+    <table border="1" align="center">
+      <thead>
+        <tr>
+          <th class='key'>fileName</th>
+          <th>fileSize</th>
+        </tr>
+      </thead>
+      <tbody id="logInfo">
+      </tbody>
+    </table>
+    <h1><center>Logs Of %project%</center></h1>
+    <table border="1" align="center">
+      <thead>
+        <tr>
+          <th class='log'>index</th>
+          <th colspan="2">log</th>
+        </tr>
+      </thead>
+      <tbody id="log">
+      </tbody>
+    </table>
+  </body>
+  <!--<script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
+  <script src="jquery-1.11.1.min.js"></script>
+  <script src="jquery.base64.js"></script>
+  <script src="md5.js"></script>
+  <script src="request.js"></script>
+  <script>
+    $(
+      function() {
+      
+        /*
+        postJson
+        (
+          'refresh%project%',
+          {
+            sign: hex_md5('%project% By %author%'),
+            type: 'yml',
+            cons: {},
+            inter: {}
+          },
+          function() {
+          }
+        )
+        */
+        
+        postJson
+        (
+          'index',
+          {
+            sign: hex_md5('%project% By %author%'),
+            author: '%author%',
+            fileName: '%project%.log'
+          },
+          function(data) {
+            var projectKey = '', projectValue = ''
+            for(var key in data) {
+              var value = data[key]
+              if (typeof value == 'object') {
+                for(var itemKey in value) {
+                  var item = '<td>' + itemKey + '</td>'
+                           + '<td>' + value[itemKey] + '</td>'
+                  $('#' + key).prepend('<tr>' + item + '</tr>')
+                }
+              } else {
+                projectKey = projectKey
+                           + '<th>' + key + '</th>'
+                projectValue = projectValue
+                             + '<td>' + value + '</td>'
+              }
+            }
+             $('#project').append('<thead><tr>' + projectKey + '</tr></thead').append('<tbody><tr>' + projectValue + '</tr></tbody>')     
+          }
+        )
+      }
+    )
+  </script>
+</html>

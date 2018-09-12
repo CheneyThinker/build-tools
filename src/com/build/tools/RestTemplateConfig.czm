@@ -1,0 +1,60 @@
+package com.%package%.config;
+
+import com.%package%.utils.%project%Utils;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Configuration
+public class RestTemplateConfig {
+
+  private static final HostnameVerifier PROMISCUOUS_VERIFIER = (s, sslSession) -> true;
+
+  @Bean
+  public RestTemplate restTemplate(ClientHttpRequestFactory factory) {
+    RestTemplate restTemplate = new RestTemplate(factory);
+    List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+    MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
+    jsonConverter.setObjectMapper(%project%Utils.getJsonMapper());
+    List<MediaType> mediaTypes = new ArrayList<>();
+    mediaTypes.add(MediaType.TEXT_PLAIN);
+    mediaTypes.add(MediaType.TEXT_HTML);
+    mediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
+    jsonConverter.setSupportedMediaTypes(mediaTypes);
+    converters.add(jsonConverter);
+    return restTemplate;
+  }
+
+  @Bean
+  public ClientHttpRequestFactory clientHttpRequestFactory() {
+    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory() {
+      protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+        if (connection instanceof HttpsURLConnection) {
+          ((HttpsURLConnection) connection).setHostnameVerifier(PROMISCUOUS_VERIFIER);
+        }
+        super.prepareConnection(connection, httpMethod);
+      }
+    };
+    factory.setReadTimeout(30000);
+    factory.setConnectTimeout(30000);
+    return factory;
+  }
+
+}

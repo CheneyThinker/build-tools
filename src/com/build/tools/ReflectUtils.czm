@@ -1,0 +1,31 @@
+package com.%package%.utils;
+
+import java.lang.reflect.InvocationTargetException;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class ReflectUtils {
+
+  public final static Object invokeGet(final String fieldName, final Object obj) {
+    try {
+      return obj.getClass().getDeclaredMethod("get".concat(firstChar2UpperCase(fieldName))).invoke(obj);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      return null;
+    }
+  }
+
+  public final static void invokeSet(final String fieldName, final Object fieldValue, final Object obj) {
+    try {
+      obj.getClass().getDeclaredMethod("set".concat(firstChar2UpperCase(fieldName)), fieldValue.getClass()).invoke(obj, fieldValue);
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+    }
+  }
+
+  public final static String firstChar2UpperCase(final String str) {
+    return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+  }
+
+}

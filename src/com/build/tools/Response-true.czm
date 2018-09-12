@@ -1,0 +1,21 @@
+package com.%package%.core;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Data
+@Accessors(chain = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class Response {
+
+  private Integer code;
+  private String msg;
+  private Object data;
+
+}

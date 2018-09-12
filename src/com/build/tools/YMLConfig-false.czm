@@ -1,0 +1,89 @@
+package com.%package%.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Component
+@ConfigurationProperties(prefix = "%prefix%")
+public class %project%YMLConfig {
+
+  @Autowired
+  private Cons cons;
+  private Map<String, String> inter;
+
+  public Cons getCons() {
+    return cons;
+  }
+
+  public void setCons(Cons _cons) {
+    cons = _cons;
+  }
+
+  public Map<String, String> getInter() {
+    return inter;
+  }
+
+  public void setInter(Map<String, String> _inter) {
+    inter = _inter;
+  }
+
+  @Service
+  public class Cons implements Cloneable {
+
+    private String projectName;
+    private String version;
+    private String major;
+    private String logPath;
+
+    public String getProjectName() {
+      return projectName;
+    }
+
+    public void setProjectName(String _projectName) {
+      projectName = _projectName;
+    }
+
+    public String getVersion() {
+      return version;
+    }
+
+    public void setVersion(String _version) {
+      version = _version;
+    }
+
+    public String getMajor() {
+      return major;
+    }
+
+    public void setMajor(String _major) {
+      major = _major;
+    }
+
+    public String getLogPath() {
+      return logPath;
+    }
+
+    public void setLogPath(String _logPath) {
+      logPath = _logPath;
+    }
+
+    public Cons clone() {
+      try {
+        return (Cons) super.clone();
+      } catch (CloneNotSupportedException e) {
+        return this;
+      }
+    }
+
+  }
+
+}

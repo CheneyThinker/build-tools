@@ -1,0 +1,33 @@
+package com.%package%.controller;
+
+import com.%package%.core.Response;
+import com.%package%.core.ResponseGenerator;
+import com.%package%.exception.%project%Exception;
+import com.%package%.utils.%project%Utils;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@RestController
+@RequestMapping("/%project%")
+@CrossOrigin(maxAge = 3600, origins = "*")
+public class %project%Controller {
+
+  @PostMapping("/invoke")
+  public Response invoke(HttpServletRequest request) {
+    try {
+      return ResponseGenerator.genOk(%project%Utils.invoke(request.getAttribute("data")));
+    } catch (%project%Exception %small%Exception) {
+      return ResponseGenerator.genNo(%small%Exception);
+    }
+  }
+
+}
