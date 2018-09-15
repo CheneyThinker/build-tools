@@ -1,0 +1,88 @@
+package com.%package%.service;
+
+import com.%package%.config.%project%YMLConfig;
+import com.%package%.exception.%project%Exception;
+import com.%package%.utils.BeanUtils;
+import com.%package%.utils.%project%Utils;
+import com.%package%.utils.ReflectUtils;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Service
+public class %project%Service {
+
+  public Object index(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      %project%YMLConfig %small%YMLConfig = %project%Utils.get%project%YMLConfig();
+      %project%YMLConfig.Cons cons = %small%YMLConfig.getCons().clone();
+      map.put("projectName", cons.getProjectName());
+      map.put("version", cons.getVersion());
+      map.put("major", cons.getMajor());
+      map.put("logPath", cons.getLogPath());
+      map.put("cons", cons);
+      map.put("inter", %small%YMLConfig.getInter());
+      map.put("log", %project%Utils.readLog(map.remove("fileName")));
+      map.put("logInfo", %project%Utils.getLogInfo());
+      return map;
+    } else {
+      return null;
+    }
+  }
+  
+  public void refresh%project%(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      if (map.containsKey("type")) {
+        Object type = map.get("type");
+        if (type.equals("yml")) {
+          %project%Utils.monitor%project%(map);
+        }
+      }
+    }
+  }
+  
+  public void reload%project%(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      try {
+        FileSystemResource fileSystemResource = new FileSystemResource(map.get("yml").toString());
+        YamlPropertiesFactoryBean yamlPropertiesFactoryBean = new YamlPropertiesFactoryBean();
+        yamlPropertiesFactoryBean.setResources(fileSystemResource);
+        Properties properties = yamlPropertiesFactoryBean.getObject();
+        %project%YMLConfig %small%YMLConfig = %project%Utils.get%project%YMLConfig();
+        %project%YMLConfig.Cons cons = %small%YMLConfig.getCons();
+        Map<String, Object> consMap = BeanUtils.toMap(cons);
+        consMap.forEach((key, value) -> {
+          if (value instanceof List) {
+            List<Object> tempList = (List<Object>) value;
+            for (int i = 0, j = tempList.size(); i < j; i++) {
+              tempList.set(i, properties.get("%prefix%.cons.".concat(key).concat("[").concat(String.valueOf(i)).concat("]")));
+            }
+          } else {
+            ReflectUtils.invokeSet(key, properties.get("%prefix%.cons.".concat(key)), cons);
+          }
+        });
+        Map<String, Object> interMap = %small%YMLConfig.getInter();
+        interMap.forEach((key, value) -> {
+          if (value instanceof Map) {
+            Map<String, Object> tempMap = (Map<String, Object>) value;
+            tempMap.forEach((k, v) -> tempMap.replace(k, properties.get("%prefix%.inter.".concat(key).concat(".").concat(k))));
+          } else {
+            interMap.replace(key, properties.get("%prefix%.inter.".concat(key)));
+          }
+        });
+      } catch (Exception e) {
+        throw new %project%Exception(e.getMessage());
+      }
+    }
+  }
+
+}

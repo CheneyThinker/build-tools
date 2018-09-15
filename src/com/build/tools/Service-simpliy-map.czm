@@ -1,0 +1,59 @@
+package com.%package%.service;
+
+import com.%package%.config.%project%YMLConfig;
+import com.%package%.exception.%project%Exception;
+import com.%package%.utils.%project%Utils;
+import org.springframework.beans.factory.config.YamlMapFactoryBean;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Service
+public class %project%Service {
+
+  public Object index(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      %project%YMLConfig %small%YMLConfig = %project%Utils.get%project%YMLConfig();
+      %project%YMLConfig.Cons cons = %small%YMLConfig.getCons().clone();
+      map.put("projectName", cons.getProjectName());
+      map.put("version", cons.getVersion());
+      map.put("major", cons.getMajor());
+      map.put("logPath", cons.getLogPath());
+      map.put("cons", cons);
+      map.put("inter", %small%YMLConfig.getInter());
+      map.put("log", %project%Utils.readLog(map.remove("fileName")));
+      map.put("logInfo", %project%Utils.getLogInfo());
+      return map;
+    } else {
+      return null;
+    }
+  }
+  
+  public void refresh%project%(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      if (map.containsKey("type")) {
+        Object type = map.get("type");
+        if (type.equals("yml")) {
+          %project%Utils.monitor%project%(map);
+        }
+      }
+    }
+  }
+  
+  public void reload%project%(Map<String, Object> map) throws %project%Exception {
+    if (map.get("sign").equals(%project%Utils.md5("%project% By %author%"))) {
+      FileSystemResource fileSystemResource = new FileSystemResource(map.get("yml").toString());
+      YamlMapFactoryBean yamlMapFactoryBean = new YamlMapFactoryBean();
+      yamlMapFactoryBean.setResources(fileSystemResource);
+      map = (Map<String, Object>) yamlMapFactoryBean.getObject().get("%prefix%");
+      %project%Utils.monitor%project%(map);
+    }
+  }
+
+}

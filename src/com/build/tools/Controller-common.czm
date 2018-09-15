@@ -40,5 +40,15 @@ public class %project%Controller {
       return ResponseGenerator.genNo(%small%Exception);
     }
   }
+  
+  @PostMapping("/reload%project%")
+  public Response reload%project%(HttpServletRequest request) {
+    try {
+      %small%Service.reload%project%(request.getAttribute("data"));
+      return ResponseGenerator.genOk();
+    } catch (%project%Exception %small%Exception) {
+      return ResponseGenerator.genNo(%small%Exception);
+    }
+  }
 
 }

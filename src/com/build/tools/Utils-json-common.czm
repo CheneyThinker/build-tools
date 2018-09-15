@@ -63,7 +63,7 @@ public final class %project%Utils {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(mediaType);
     MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-    String url = %small%YMLConfig.getInter().get(params.remove("address"));
+    String url = (String) %small%YMLConfig.getInter().get(params.remove("address"));
     map.setAll(params);
     HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(map, headers);
     return restTemplate.postForObject(url, formEntity, clazz);
@@ -80,7 +80,7 @@ public final class %project%Utils {
   public static final <T> T postJson(final Map<String, Object> params, final Class<T> clazz) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-    return restTemplate.postForObject(%small%YMLConfig.getInter().get(params.remove("address")), new HttpEntity<String>(toJson(params), headers), clazz);
+    return restTemplate.postForObject((String) %small%YMLConfig.getInter().get(params.remove("address")), new HttpEntity<String>(toJson(params), headers), clazz);
   }
 
   public static final Map<String, Object> getMap(final String content) throws %project%Exception {
@@ -184,6 +184,26 @@ public final class %project%Utils {
       logInfo.put(f.getName(), f.length());
     }
     return logInfo;
+  }
+  
+  public static final void monitor%project%(Map<String, Object> map) {
+    if (map.containsKey("cons")) {
+      %project%YMLConfig.Cons cons = %small%YMLConfig.getCons();
+      Map<String, Object> consMap = (Map<String, Object>) map.get("cons");
+      consMap.forEach((key, value) -> ReflectUtils.invokeSet(key, value, cons));
+    }
+    if (map.containsKey("inter")) {
+      Map<String, Object> inter = %small%YMLConfig.getInter();
+      Map<String, Object> interMap = (Map<String, Object>) map.get("inter");
+      interMap.forEach((key, value) -> {
+        if (value instanceof Map) {
+          Map<String, Object> keyMap = (Map<String, Object>) inter.get(key);
+          ((Map<String, Object>) value).forEach((k, v) -> keyMap.replace(k, v));
+        } else {
+          inter.replace(key, value);
+        }
+      });
+    }
   }
 
 }

@@ -20,7 +20,7 @@ public class %project%YMLConfig {
 
   @Autowired
   private Cons cons;
-  private Map<String, String> inter;
+  private Map<String, Object> inter;
 
   @Data
   @Service

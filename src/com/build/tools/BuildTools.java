@@ -45,38 +45,38 @@ public class BuildTools {
           Container container = jFrame.getContentPane();
           container.setLayout(null);
           
-          //String[] items = { "projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "model:", "lombok:", "xml:", "conversion:", "Makefile" };
-          //String[] tips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0.0$tea-1.0.0", "Example:cheney.xml$tea.xml", "false,true", "simpliy,common", "false,true", "false,true", "map,entity" };
+          String[] jTextFieldItems = { "projectName:", "port:", "author:", "outerJar:", "wsdl:" };
+          String[] jTextFieldTips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0.0$tea-1.0.0", "Example:cheney.xml$tea.xml" };
           
-          String[] items = { "projectName:", "port:", "author:", "outerJar:", "wsdl:", "sourceOfWsdl:", "lombok:", "mediaType:", "model:", "Makefile" };
-          String[] tips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0.0$tea-1.0.0", "Example:cheney.xml$tea.xml", "false,true", "false,true", "json,both", "simpliy,common" };
+          String[] jComboBoxItems = { "sourceOfWsdl:", "lombok:", "mediaType:", "model:", "reloadYmlAs:" };
+          String[] jComboBoxTips = { "false,true", "false,true", "json,both", "simpliy,common", "map,properties" };
           
-          int comItem = 1 + 4;
           int itemHeight = 35;
           int width = 500;
-          int height = ((items.length + 1) * itemHeight) + ((items.length + 2) * 5);
-          JLabel[] jLabels = new JLabel[items.length - 1];
-          JTextField[] jTextFields = new JTextField[items.length - comItem];
-          for (int i = 0, j = items.length - comItem; i < j; i++) {
-            jLabels[i] = new JLabel(items[i]);
+          int totalLength = jTextFieldItems.length + jComboBoxItems.length + 1;
+          int height = ((totalLength + 1) * itemHeight) + ((totalLength + 2) * 5);
+          JLabel[] jLabels = new JLabel[totalLength - 1];
+          JTextField[] jTextFields = new JTextField[jTextFieldItems.length];
+          int i = 0;
+          for (int j = jTextFields.length; i < j; i++) {
+            jLabels[i] = new JLabel(jTextFieldItems[i]);
             jLabels[i].setBounds(5, i * itemHeight + 5 * (i + 1), 135, itemHeight);
             container.add(jLabels[i]);
-            jTextFields[i] = new JTextField(tips[i]);
+            jTextFields[i] = new JTextField(jTextFieldTips[i]);
             jTextFields[i].setBounds(140, i * itemHeight + 5 * (i + 1), 350, itemHeight);
             container.add(jTextFields[i]);
           }
-          int i = items.length - comItem, j = items.length - 1;
-          JComboBox<?>[] jComboBoxs = new JComboBox<?>[j - i];
-          for (int k = 0; i < j; i++, k++) {
-            jLabels[i] = new JLabel(items[i]);
+          JComboBox<?>[] jComboBoxs = new JComboBox<?>[jComboBoxItems.length];
+          for (int k = 0, j = jComboBoxs.length; k < j; i++, k++) {
+            jLabels[i] = new JLabel(jComboBoxItems[k]);
             jLabels[i].setBounds(5, i * itemHeight + 5 * (i + 1), 135, itemHeight);
             container.add(jLabels[i]);
-            jComboBoxs[k] = new JComboBox<>(tips[i].split("\\,"));
+            jComboBoxs[k] = new JComboBox<>(jComboBoxTips[k].split("\\,"));
             jComboBoxs[k].setBounds(140, i * itemHeight + 5 * (i + 1), 350, itemHeight);
             container.add(jComboBoxs[k]);
           }
-          JButton jButton = new JButton(items[items.length - 1]);
-          jButton.setBounds(5, (items.length - 1) * itemHeight + 5 * (items.length + 1), 485, itemHeight);
+          JButton jButton = new JButton("Makefile");
+          jButton.setBounds(5, (totalLength - 1) * itemHeight + 5 * (totalLength + 1), 485, itemHeight);
           jButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
               try {
@@ -89,7 +89,7 @@ public class BuildTools {
                 String lombok = jComboBoxs[1].getSelectedItem().toString();
                 String xml = jComboBoxs[2].getSelectedItem().toString();
                 String model = jComboBoxs[3].getSelectedItem().toString();
-                //String conversion = jComboBoxs[4].getSelectedItem().toString();
+                String reloadYmlAs = jComboBoxs[4].getSelectedItem().toString();
                 
                 BuildUtils.init(projectName);
                 
@@ -133,10 +133,12 @@ public class BuildTools {
                 BuildUtils.filter();
                 template.writeCzm("Filter-".concat(model), type.getProjectName().concat("Filter.java"));
                 BuildUtils.service();
-                template.writeCzm("Service-".concat(model), type.getProjectName().concat("Service.java"));
-                if (model.equals("common")) {
+                if (model.equals("simpliy")) {
+                  template.writeCzm("Service-".concat(model).concat("-").concat(reloadYmlAs), type.getProjectName().concat("Service.java"));
+                } else {
+                  template.writeCzm("Service-".concat(model), type.getProjectName().concat("Service.java"));
                   BuildUtils.serviceImpl();
-                  template.writeCzm("ServiceImpl", type.getProjectName().concat("ServiceImpl.java"));
+                  template.writeCzm("ServiceImpl-".concat(reloadYmlAs), type.getProjectName().concat("ServiceImpl.java"));
                 }
                 BuildUtils.utils();
                 template.writeCzm("Utils-".concat(xml).concat("-").concat(model), type.getProjectName().concat("Utils.java"));

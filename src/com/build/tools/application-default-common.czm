@@ -3,9 +3,10 @@ server:
 %prefix%:
   cons:
     projectName: %project%
-    version: PRO
+    version: DEFAULT
     major: 1.0.0
     logPath: logs/
   inter:
     index: http://127.0.0.1:%port%/%project%/index
     refresh%project%: http://127.0.0.1:%port%/%project%/refresh%project%
+    reload%project%: http://127.0.0.1:%port%/%project%/reload%project%

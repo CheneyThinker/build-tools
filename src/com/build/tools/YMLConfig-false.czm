@@ -18,7 +18,7 @@ public class %project%YMLConfig {
 
   @Autowired
   private Cons cons;
-  private Map<String, String> inter;
+  private Map<String, Object> inter;
 
   public Cons getCons() {
     return cons;
@@ -28,11 +28,11 @@ public class %project%YMLConfig {
     cons = _cons;
   }
 
-  public Map<String, String> getInter() {
+  public Map<String, Object> getInter() {
     return inter;
   }
 
-  public void setInter(Map<String, String> _inter) {
+  public void setInter(Map<String, Object> _inter) {
     inter = _inter;
   }
 

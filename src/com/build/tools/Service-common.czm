@@ -11,5 +11,6 @@ public interface %project%Service {
 
   Object index(Object data) throws %project%Exception;
   void refresh%project%(Object data) throws %project%Exception;
+  void reload%project%(Object data) throws %project%Exception;
 
 }

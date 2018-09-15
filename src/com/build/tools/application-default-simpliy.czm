@@ -3,7 +3,7 @@ server:
 %prefix%:
   cons:
     projectName: %project%
-    version: PRO
+    version: DEFAULT
     major: 1.0.0
     logPath: logs/
   inter:

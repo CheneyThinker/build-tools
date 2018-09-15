@@ -95,6 +95,19 @@
         )
         */
         
+        /*
+        postJson
+        (
+          {
+            methodOf%project%: 'reload%project%',
+            sign: hex_md5('%project% By %author%'),
+            yml: 'application-default.yml'
+          },
+          function() {
+          }
+        )
+        */
+        
         postJson
         (
           {
@@ -109,9 +122,31 @@
               var value = data[key]
               if (typeof value == 'object') {
                 for(var itemKey in value) {
-                  var item = '<td>' + itemKey + '</td>'
-                           + '<td>' + value[itemKey] + '</td>'
-                  $('#' + key).prepend('<tr>' + item + '</tr>')
+                  var itemValue = value[itemKey]
+                  if (typeof itemValue == 'object') {
+                    if (Array.isArray(itemValue)) {
+                      var length = itemValue.length;
+                      var item = '<tr><td rowspan="' + length + '">' + itemKey + '</td>'
+                               + '<td>' + itemValue[0] + '</td></tr>'
+                      for (var i = 1; i < length; i++) {
+                        item = item + '<tr><td>' + itemValue[i] + '</td></tr>'
+                      }
+                      $('#' + key).prepend(item)
+                    } else {
+                      var keys = Object.keys(itemValue)
+                      var length = keys.length
+                      var item = '<tr><td rowspan="' + length + '">' + itemKey
+                               + '</td><td>' + keys[0] + ' => ' + itemValue[keys[0]] + '</td></tr>'
+                      for (var i = 1; i < length; i++) {
+                        item = item + '<tr><td>' + keys[i] + ' => ' + itemValue[keys[i]] + '</td></tr>'
+                      }
+                      $('#' + key).prepend(item)
+                    }
+                  } else {
+                    var item = '<td>' + itemKey + '</td>'
+                             + '<td>' + itemValue + '</td>'
+                    $('#' + key).prepend('<tr>' + item + '</tr>')
+                  }
                 }
               } else {
                 projectKey = projectKey
@@ -120,7 +155,7 @@
                              + '<td>' + value + '</td>'
               }
             }
-             $('#project').append('<thead><tr>' + projectKey + '</tr></thead').append('<tbody><tr>' + projectValue + '</tr></tbody>')     
+            $('#project').append('<thead><tr>' + projectKey + '</tr></thead').append('<tbody><tr>' + projectValue + '</tr></tbody>')
           }
         )
       }
