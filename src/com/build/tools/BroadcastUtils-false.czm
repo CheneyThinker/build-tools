@@ -1,0 +1,55 @@
+package com.%package%.utils;
+
+import com.%package%.core.BroadcastWrapper;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.util.StringUtils;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class BroadcastUtils {
+
+  private static SimpMessagingTemplate simpMessagingTemplate;
+  private static final String BROADCAST_DESTINATION = "/topic/%project%/broadcast";
+  private static final String SPECIAL_DESTINATION = "";
+  private static BlockingQueue<BroadcastWrapper> broadcastWrappers = new LinkedBlockingQueue<BroadcastWrapper>();
+
+  public static final void installSimpMessagingTemplate(final SimpMessagingTemplate _simpMessagingTemplate) {
+    if (StringUtils.isEmpty(simpMessagingTemplate)) {
+      simpMessagingTemplate = _simpMessagingTemplate;
+    }
+  }
+
+  public static final SimpMessagingTemplate getSimpMessagingTemplate() {
+    return simpMessagingTemplate;
+  }
+  
+  public static final void addMessage(BroadcastWrapper broadcastWrapper) {
+    try {
+      if (!StringUtils.isEmpty(broadcastWrapper)) {
+        broadcastWrappers.put(broadcastWrapper);
+      }
+    } catch (InterruptedException e) {
+    }
+  }
+
+  public static final synchronized void sendMessage() {
+    try {
+      BroadcastWrapper broadcastWrapper = broadcastWrappers.take();
+      if (!StringUtils.isEmpty(broadcastWrapper)) {
+        if (StringUtils.isEmpty(broadcastWrapper.getUser())) {
+          getSimpMessagingTemplate().convertAndSend(StringUtils.isEmpty(broadcastWrapper.getDestination()) ? BROADCAST_DESTINATION : broadcastWrapper.getDestination(), broadcastWrapper.getPayload());
+        } else {
+          getSimpMessagingTemplate().convertAndSendToUser(broadcastWrapper.getUser(), StringUtils.isEmpty(broadcastWrapper.getDestination()) ? SPECIAL_DESTINATION : broadcastWrapper.getDestination(), broadcastWrapper.getPayload());
+        }
+      }
+    } catch (InterruptedException e) {
+    }
+  }
+
+}

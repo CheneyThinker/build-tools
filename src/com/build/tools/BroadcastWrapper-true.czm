@@ -1,0 +1,19 @@
+package com.%package%.core;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Data
+@Accessors(chain = true)
+public class BroadcastWrapper {
+
+  private String destination;
+  private String user;
+  private Object payload;
+
+}

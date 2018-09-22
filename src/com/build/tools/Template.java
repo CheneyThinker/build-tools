@@ -31,6 +31,7 @@ public class Template {
       result = result.replaceAll("%prefix%", type.getAddSplitLine());
       result = result.replaceAll("%small%", type.getFirstLowerCase());
       result = result.replaceAll("%port%", type.getPort());
+      result = result.replaceAll("%jQuery%", type.getjQuery());
       BuildUtils.write(result, fileName);
     } catch (Exception e) {
       e.printStackTrace();

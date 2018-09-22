@@ -1,0 +1,41 @@
+package com.%package%.core;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public class BroadcastWrapper {
+
+  private String destination;
+  private String user;
+  private Object payload;
+
+  public String getDestination() {
+    return destination;
+  }
+
+  public BroadcastWrapper setDestination(String _destination) {
+    destination = _destination;
+    return this;
+  }
+
+  public String getUser() {
+    return user;
+  }
+
+  public BroadcastWrapper setUser(String _user) {
+    user = _user;
+    return this;
+  }
+
+  public Object getPayload() {
+    return payload;
+  }
+
+  public BroadcastWrapper setPayload(Object _payload) {
+    payload = _payload;
+    return this;
+  }
+
+}

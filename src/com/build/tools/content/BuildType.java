@@ -32,7 +32,7 @@ public class BuildType {
     jQuery = _jQuery;
   }
   
-	public String getPom(String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean lombok, boolean xml) {
+	public String getPom(String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean lombok, boolean xml, String broadcast) {
     builder.delete(0, builder.length())
     .append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     .append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n")
@@ -67,6 +67,13 @@ public class BuildType {
     .append("      <artifactId>spring-boot-configuration-processor</artifactId>\n")
     .append("      <optional>true</optional>\n")
     .append("    </dependency>\n");
+    if (broadcast.equals("stomp")) {
+        builder
+        .append("    <dependency>\n")
+        .append("      <groupId>org.springframework.boot</groupId>\n")
+        .append("      <artifactId>spring-boot-starter-websocket</artifactId>\n")
+        .append("    </dependency>\n");
+  	}
     if (lombok) {
       builder
       .append("    <dependency>\n")

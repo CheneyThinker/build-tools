@@ -1,0 +1,22 @@
+package com.%package%.core;
+
+import com.%package%.utils.BroadcastUtils;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public class BroadcastDispatch implements Runnable {
+
+  public BroadcastDispatch() {
+    new Thread(this).start();
+  }
+  
+  public void run() {
+    while (true) {
+      BroadcastUtils.sendMessage();
+    }
+  }
+
+}

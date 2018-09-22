@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="author" content="%author%">
+    <title>Stomp Broadcast</title>
+  </head>
+  <body>
+    <noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being enabled. Please enable Javascript and reload this page!</h2></noscript>
+    <button id="connect">Connect</button>
+    <button id="disconnect" disabled="disabled">Disconnect</button>
+    <label for="code">Code</label>
+    <input type="number" id="code">
+    <label for="msg">Msg</label>
+    <input type="text" id="msg">
+    <label for="data">Data</label>
+    <input type="text" id="data">
+    <button id="send" disabled="disabled">Send</button>
+  </body>
+  <!--
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+  -->
+  <script src="jquery-%jQuery%.min.js"></script>
+  <script src="stomp.min.js"></script>
+  <script src="sockjs.min.js"></script>
+  <script src="stomp-index.js"></script>
+</html>

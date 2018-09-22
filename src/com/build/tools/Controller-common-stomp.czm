@@ -1,0 +1,62 @@
+package com.%package%.controller;
+
+import com.%package%.core.Response;
+import com.%package%.core.ResponseGenerator;
+import com.%package%.exception.%project%Exception;
+import com.%package%.service.%project%Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@RestController
+@RequestMapping("/%project%")
+@CrossOrigin(maxAge = 3600, origins = "*")
+public class %project%Controller {
+
+  @Autowired
+  private %project%Service %small%Service;
+
+  @PostMapping("/index")
+  public Response index(HttpServletRequest request) {
+    try {
+      return ResponseGenerator.genOk(%small%Service.index(request.getAttribute("data")));
+    } catch (%project%Exception %small%Exception) {
+      return ResponseGenerator.genNo(%small%Exception);
+    }
+  }
+
+  @PostMapping("/refresh%project%")
+  public Response refresh%project%(HttpServletRequest request) {
+    try {
+      %small%Service.refresh%project%(request.getAttribute("data"));
+      return ResponseGenerator.genOk();
+    } catch (%project%Exception %small%Exception) {
+      return ResponseGenerator.genNo(%small%Exception);
+    }
+  }
+  
+  @PostMapping("/reload%project%")
+  public Response reload%project%(HttpServletRequest request) {
+    try {
+      %small%Service.reload%project%(request.getAttribute("data"));
+      return ResponseGenerator.genOk();
+    } catch (%project%Exception %small%Exception) {
+      return ResponseGenerator.genNo(%small%Exception);
+    }
+  }
+  
+  @MessageMapping("/getResponse")
+  @SendTo("/topic/%project%/broadcast")
+  public Response broadcast(Response response) {
+    return ResponseGenerator.genOk(response);
+  }
+
+}

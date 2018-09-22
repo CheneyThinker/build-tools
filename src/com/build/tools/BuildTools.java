@@ -4,6 +4,8 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,8 +50,8 @@ public class BuildTools {
           String[] jTextFieldItems = { "projectName:", "port:", "author:", "outerJar:", "wsdl:" };
           String[] jTextFieldTips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0.0$tea-1.0.0", "Example:cheney.xml$tea.xml" };
           
-          String[] jComboBoxItems = { "sourceOfWsdl:", "lombok:", "mediaType:", "model:", "reloadYmlAs:" };
-          String[] jComboBoxTips = { "false,true", "false,true", "json,both", "simpliy,common", "map,properties" };
+          String[] jComboBoxItems = { "sourceOfWsdl:", "lombok:", "mediaType:", "model:", "reloadYmlAs:", "broadcast:", "drivenModel:" };
+          String[] jComboBoxTips = { "false,true", "false,true", "json,both", "simpliy,common", "map,properties", "none,stomp", "Event Driven,Timing Task Driven" };
           
           int itemHeight = 35;
           int width = 500;
@@ -90,6 +92,8 @@ public class BuildTools {
                 String xml = jComboBoxs[2].getSelectedItem().toString();
                 String model = jComboBoxs[3].getSelectedItem().toString();
                 String reloadYmlAs = jComboBoxs[4].getSelectedItem().toString();
+                String broadcast = jComboBoxs[5].getSelectedItem().toString();
+                boolean eventDrivenModel = jComboBoxs[6].getSelectedItem().toString().equals("Event Driven");
                 
                 BuildUtils.init(projectName);
                 
@@ -116,22 +120,31 @@ public class BuildTools {
                 if (BuildUtils.isEmpty(author)) {
                   author = "CheneyThinker";
                 }
-                BuildType type = new BuildType(projectName, author, port);
+                BuildType type = new BuildType(projectName, author.equals("CheneyThinkerImage") ? "CheneyThinker" : author, port);
                 Template template = new Template(type);
                 
                 BuildUtils.config();
                 template.writeCzm("YMLConfig-".concat(lombok), type.getProjectName().concat("YMLConfig.java"));
                 template.writeCzm("RestTemplateConfig", "RestTemplateConfig.java");
+                if (broadcast.equals("stomp")) {
+                  template.writeCzm("StompWebSocketMessageBrokerConfigurer", "StompWebSocketMessageBrokerConfigurer.java");
+				}
                 BuildUtils.controller();
-                template.writeCzm("Controller-".concat(model), type.getProjectName().concat("Controller.java"));
+                template.writeCzm("Controller-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat("Controller.java"));
                 BuildUtils.core();
                 template.writeCzm("Response-".concat(lombok), "Response.java");
                 template.writeCzm("ResponseCode", "ResponseCode.java");
                 template.writeCzm("ResponseGenerator", "ResponseGenerator.java");
+                if (!broadcast.equals("none")) {
+                  if (eventDrivenModel == false) {
+                	template.writeCzm("BroadcastWrapper-".concat(lombok), "BroadcastWrapper.java");
+                	template.writeCzm("BroadcastDispatch", "BroadcastDispatch.java");
+                  }
+                }
                 BuildUtils.exception();
                 template.writeCzm("Exception", type.getProjectName().concat("Exception.java"));
                 BuildUtils.filter();
-                template.writeCzm("Filter-".concat(model), type.getProjectName().concat("Filter.java"));
+                template.writeCzm("Filter-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat("Filter.java"));
                 BuildUtils.service();
                 if (model.equals("simpliy")) {
                   template.writeCzm("Service-".concat(model).concat("-").concat(reloadYmlAs), type.getProjectName().concat("Service.java"));
@@ -144,6 +157,9 @@ public class BuildTools {
                 template.writeCzm("Utils-".concat(xml).concat("-").concat(model), type.getProjectName().concat("Utils.java"));
                 template.writeCzm("BeanUtils", "BeanUtils.java");
                 template.writeCzm("ReflectUtils", "ReflectUtils.java");
+                if (!broadcast.equals("none")) {
+				  template.writeCzm("BroadcastUtils-".concat(String.valueOf(eventDrivenModel)), "BroadcastUtils.java");
+				}
                 BuildUtils.application();
                 BuildUtils.write(type.getApplication(), type.getProjectName().concat("Application.java"));
                 
@@ -179,7 +195,19 @@ public class BuildTools {
                   BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "jquery-1.11.1.min.js");
                   jQuery = "1.11.1";
                 }
+                type.setjQuery(jQuery);
+                if (author.equals("CheneyThinkerImage")) {
+				  BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "image-base64.js");
+				  BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "image-index.js");
+				  template.writeCzm("image-index", "image-index.html");
+				}
                 BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "md5.js");
+                if (!broadcast.equals("none")) {
+                  BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "stomp.min.js");
+                  BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "sockjs.min.js");
+                  template.writeCzm("stompJS", "stomp-index.js");
+                  template.writeCzm("stompHtml", "stomp-index.html");
+				}
                 template.writeCzm("html-".concat(model), type.getProjectName().concat(".html"));
                 template.writeCzm("jquery.base64", "jquery.base64.js");
                 template.writeCzm("request-".concat(model), "request.js");
@@ -256,7 +284,7 @@ public class BuildTools {
                 template.writeCzm("application-default-".concat(model), "application-default.yml");
                 template.writeCzm("logback-spring", "logback-spring.xml");
                 BuildUtils.pom();
-                BuildUtils.write(type.getPom(outerJars, wsdlJars, sourceOfWsdl.equals("true"), lombok.equals("true"), xml.equals("xml") || xml.equals("both")), "pom.xml");
+                BuildUtils.write(type.getPom(outerJars, wsdlJars, sourceOfWsdl.equals("true"), lombok.equals("true"), xml.equals("xml") || xml.equals("both"), broadcast), "pom.xml");
                 
                 System.exit(0);
               } catch (Exception ex) {

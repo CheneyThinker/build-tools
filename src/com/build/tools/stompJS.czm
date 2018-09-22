@@ -1,0 +1,33 @@
+var stompClient = null;
+function setConnected(connected) {
+  $("#connect").prop("disabled", connected);
+  $("#disconnect").prop("disabled", !connected);
+  $("#send").prop("disabled", !connected);
+}
+function connect() {
+  var socket = new SockJS('http://127.0.0.1:%port%/%project%WebSocketServer');
+  stompClient = Stomp.over(socket);
+  stompClient.connect({}, function (frame) {
+    setConnected(true);
+    stompClient.subscribe('/topic/%project%/broadcast', function (res) {
+      console.log(JSON.parse(res.body));
+    });
+  });
+}
+function disconnect() {
+  if (stompClient !== null) {
+    stompClient.disconnect();
+  }
+  setConnected(false);
+}
+function sendResponse() {
+  stompClient.send("/%project%/getResponse", {}, JSON.stringify({
+    code: $("#code").val(),
+    msg: $("#msg").val(),
+    data: $("#data").val()}));
+}
+$(function() {
+  $("#connect").click(function() { connect(); });
+  $("#disconnect").click(function() { disconnect(); });
+  $("#send").click(function() { sendResponse(); });
+});

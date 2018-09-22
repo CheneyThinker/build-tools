@@ -1,0 +1,35 @@
+package com.%package%.utils;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.util.StringUtils;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class BroadcastUtils {
+
+  private static SimpMessagingTemplate simpMessagingTemplate;
+  private static final String BROADCAST_DESTINATION = "/topic/%project%/broadcast";
+  private static final String SPECIAL_DESTINATION = "";
+
+  public static final void installSimpMessagingTemplate(final SimpMessagingTemplate _simpMessagingTemplate) {
+    if (StringUtils.isEmpty(simpMessagingTemplate)) {
+      simpMessagingTemplate = _simpMessagingTemplate;
+    }
+  }
+
+  public static final SimpMessagingTemplate getSimpMessagingTemplate() {
+    return simpMessagingTemplate;
+  }
+
+  public static final void convertAndSend(Object payload) {
+    getSimpMessagingTemplate().convertAndSend(BROADCAST_DESTINATION, payload);
+  }
+
+  public static final void convertAndSendToUser(String user, Object payload) {
+    getSimpMessagingTemplate().convertAndSendToUser(user, SPECIAL_DESTINATION, payload);
+  }
+
+}
