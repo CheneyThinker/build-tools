@@ -25,5 +25,5 @@
   <script src="jquery-%jQuery%.min.js"></script>
   <script src="stomp.min.js"></script>
   <script src="sockjs.min.js"></script>
-  <script src="stomp-index.js"></script>
+  <script src="stomp-broker.js"></script>
 </html>

@@ -4,8 +4,6 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,7 +49,7 @@ public class BuildTools {
           String[] jTextFieldTips = { "lemon", "9527", "CheneyThinker", "Example:cheney-thinker-1.0.0$tea-1.0.0", "Example:cheney.xml$tea.xml" };
           
           String[] jComboBoxItems = { "sourceOfWsdl:", "lombok:", "mediaType:", "model:", "reloadYmlAs:", "broadcast:", "drivenModel:" };
-          String[] jComboBoxTips = { "false,true", "false,true", "json,both", "simpliy,common", "map,properties", "none,stomp", "Event Driven,Timing Task Driven" };
+          String[] jComboBoxTips = { "false,true", "false,true", "json,both", "simpliy,common", "map,properties", "none,stomp,websocket", "Event Driven,Timing Task Driven" };
           
           int itemHeight = 35;
           int width = 500;
@@ -128,23 +126,27 @@ public class BuildTools {
                 template.writeCzm("RestTemplateConfig", "RestTemplateConfig.java");
                 if (broadcast.equals("stomp")) {
                   template.writeCzm("StompWebSocketMessageBrokerConfigurer", "StompWebSocketMessageBrokerConfigurer.java");
+				} else if (broadcast.equals("websocket")) {
+					template.writeCzm("ServerEndpointExporterConfig", "ServerEndpointExporterConfig.java");
 				}
                 BuildUtils.controller();
-                template.writeCzm("Controller-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat("Controller.java"));
+                template.writeCzm("Controller-".concat(model).concat("-").concat(broadcast.equals("websocket") ? "none" : broadcast), type.getProjectName().concat("Controller.java"));
                 BuildUtils.core();
                 template.writeCzm("Response-".concat(lombok), "Response.java");
                 template.writeCzm("ResponseCode", "ResponseCode.java");
                 template.writeCzm("ResponseGenerator", "ResponseGenerator.java");
-                if (!broadcast.equals("none")) {
+                if (broadcast.equals("stomp")) {
                   if (eventDrivenModel == false) {
                 	template.writeCzm("BroadcastWrapper-".concat(lombok), "BroadcastWrapper.java");
                 	template.writeCzm("BroadcastDispatch", "BroadcastDispatch.java");
                   }
+                } else if (broadcast.equals("websocket")) {
+                  template.writeCzm("WebSocket", type.getProjectName().concat("WebSocket.java"));
                 }
                 BuildUtils.exception();
                 template.writeCzm("Exception", type.getProjectName().concat("Exception.java"));
                 BuildUtils.filter();
-                template.writeCzm("Filter-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat("Filter.java"));
+                template.writeCzm("Filter-".concat(model).concat("-").concat(broadcast.equals("websocket") ? "none" : broadcast), type.getProjectName().concat("Filter.java"));
                 BuildUtils.service();
                 if (model.equals("simpliy")) {
                   template.writeCzm("Service-".concat(model).concat("-").concat(reloadYmlAs), type.getProjectName().concat("Service.java"));
@@ -157,8 +159,10 @@ public class BuildTools {
                 template.writeCzm("Utils-".concat(xml).concat("-").concat(model), type.getProjectName().concat("Utils.java"));
                 template.writeCzm("BeanUtils", "BeanUtils.java");
                 template.writeCzm("ReflectUtils", "ReflectUtils.java");
-                if (!broadcast.equals("none")) {
+                if (broadcast.equals("stomp")) {
 				  template.writeCzm("BroadcastUtils-".concat(String.valueOf(eventDrivenModel)), "BroadcastUtils.java");
+				} else if (broadcast.equals("websocket")) {
+				  template.writeCzm("WebSocketUtils", "BroadcastUtils.java");
 				}
                 BuildUtils.application();
                 BuildUtils.write(type.getApplication(), type.getProjectName().concat("Application.java"));
@@ -202,13 +206,16 @@ public class BuildTools {
 				  template.writeCzm("image-index", "image-index.html");
 				}
                 BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "md5.js");
-                if (!broadcast.equals("none")) {
+                if (broadcast.equals("stomp")) {
                   BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "stomp.min.js");
                   BuildUtils.readLocal(getClass(), buffer, readBytes, front.getPath(), "sockjs.min.js");
-                  template.writeCzm("stompJS", "stomp-index.js");
-                  template.writeCzm("stompHtml", "stomp-index.html");
+                  template.writeCzm("stompJS", "stomp-broker.js");
+                  template.writeCzm("stompHtml", "StompBroker.html");
+				} else if (broadcast.equals("websocket")) {
+				  template.writeCzm("websocketJS", "stomp-broker.js");
+				  template.writeCzm("websocketHtml", "StompBroker.html");
 				}
-                template.writeCzm("html-".concat(model), type.getProjectName().concat(".html"));
+                template.writeCzm("html-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat(".html"));
                 template.writeCzm("jquery.base64", "jquery.base64.js");
                 template.writeCzm("request-".concat(model), "request.js");
                 

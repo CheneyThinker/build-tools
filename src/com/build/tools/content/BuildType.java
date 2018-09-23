@@ -67,7 +67,7 @@ public class BuildType {
     .append("      <artifactId>spring-boot-configuration-processor</artifactId>\n")
     .append("      <optional>true</optional>\n")
     .append("    </dependency>\n");
-    if (broadcast.equals("stomp")) {
+    if (!broadcast.equals("none")) {
         builder
         .append("    <dependency>\n")
         .append("      <groupId>org.springframework.boot</groupId>\n")

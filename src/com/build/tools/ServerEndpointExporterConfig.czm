@@ -1,0 +1,20 @@
+package com.%package%.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Configuration
+public class ServerEndpointExporterConfig {
+
+  @Bean
+  public ServerEndpointExporter serverEndpointExporter() {
+    return new ServerEndpointExporter();
+  }
+
+}

@@ -1,0 +1,47 @@
+package com.%package%.utils;
+
+import javax.websocket.Session;
+import java.io.IOException;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class BroadcastUtils {
+
+  private static final CopyOnWriteArraySet<Session> SESSIONS = new CopyOnWriteArraySet<>();
+  private static final AtomicInteger onlineCount = new AtomicInteger(0);
+
+  public static final synchronized void addSession(Session session) {
+    SESSIONS.add(session);
+  }
+  
+  public static final synchronized void removeSession(Session session) {
+    SESSIONS.remove(session);
+  }
+
+  public static final CopyOnWriteArraySet<Session> getSessions() {
+    return SESSIONS;
+  }
+
+  public static final synchronized int incrementOnlineCount() {
+    return onlineCount.incrementAndGet();
+  }
+
+  public static final synchronized int decrementOnlineCount() {
+    return onlineCount.decrementAndGet();
+  }
+
+  public static final void sendToAllUser(String message) {
+    getSessions().forEach((session -> {
+      try {
+        session.getBasicRemote().sendText(message);
+      } catch (IOException e) {
+      }
+    }));
+  }
+
+}

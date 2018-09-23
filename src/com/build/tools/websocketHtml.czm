@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="author" content="%author%">
+    <title>WebSocket Broadcast</title>
+  </head>
+  <body>
+    <div>
+      <input type="button" value="Connect" id="connect" />
+      <input disabled="disabled" type="button" value="Disconnect" id="disconnect" />
+    </div>
+    <div id="messages"></div>
+  </body>
+  <!--<script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
+  <script src="jquery-%jQuery%.min.js"></script>
+  <script src="stomp-broker.js"></script>
+</html>

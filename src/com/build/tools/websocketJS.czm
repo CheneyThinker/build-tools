@@ -1,0 +1,33 @@
+var webSocket = null;
+if ('WebSocket' in window) {
+  webSocket = new WebSocket("ws://127.0.0.1:%port%/%project%WebSocketServer");
+} else {
+  alert('Not support websocket');
+}
+webSocket.onopen = function(event) {
+  console.log(event);
+  document.getElementById('messages').innerHTML = 'Connection established';
+};
+webSocket.onmessage = function(event) {
+  console.log(event);
+  document.getElementById('messages').innerHTML += '<br/>' + event.data;
+  setConnected(true);
+};
+webSocket.onclose = function(event) {
+  console.log(event);
+  document.getElementById('messages').innerHTML += '<br/>Connection closed';
+  setConnected(false);
+}
+window.onbeforeunload = function() {
+  webSocket.close();
+}
+$('#connect').click(function(){
+  webSocket.send('Prepared to established %project%');
+})
+$('#disconnect').click(function(){
+  webSocket.close();
+})
+function setConnected(connected) {
+  $("#connect").prop("disabled", connected);
+  $("#disconnect").prop("disabled", !connected);
+}

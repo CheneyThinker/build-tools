@@ -1,0 +1,44 @@
+package com.%package%.core;
+
+import com.%package%.utils.BroadcastUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+@Component
+@ServerEndpoint(value = "/%project%WebSocketServer")
+public class CivilAffairsWebSocket {
+
+  private Session session;
+  private Logger logger = LoggerFactory.getLogger(%project%WebSocket.class);
+
+  @OnOpen
+  public void onOpen() {
+    logger.error("Connection established");
+  }
+
+  @OnMessage
+  public void onMessage(String message, Session _session) throws IOException {
+    session = _session;
+    logger.error("Remote: {}, 有新连接加入! 当前在线人数为: {}, 当前sessionId: {}", message, BroadcastUtils.incrementOnlineCount(), session.getId());
+    session.getBasicRemote().sendText("Welcome ".concat(session.getId()).concat(" Enter!"));
+    BroadcastUtils.addSession(session);
+  }
+
+  @OnClose
+  public void onClose() {
+    logger.error("Connection closed");
+    logger.error("有一连接关闭! 当前在线人数为: {}, 当前sessionId: {}", BroadcastUtils.decrementOnlineCount(), session.getId());
+    BroadcastUtils.removeSession(session);
+  }
+
+}
