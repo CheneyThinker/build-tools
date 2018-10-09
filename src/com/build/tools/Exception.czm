@@ -13,7 +13,7 @@ public final class %project%Exception extends Exception {
   private Object data;
 
   public %project%Exception(String msg) {
-    this(ResponseCode.BAD_REQUEST, msg);
+    this(ResponseCode.NOT_FOUND, msg);
   }
 
   public %project%Exception(ResponseCode _responseCode, String msg) {

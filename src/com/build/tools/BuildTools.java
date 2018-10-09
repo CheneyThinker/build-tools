@@ -215,7 +215,10 @@ public class BuildTools {
 				  template.writeCzm("websocketJS", "stomp-broker.js");
 				  template.writeCzm("websocketHtml", "StompBroker.html");
 				}
+                template.writeCzm("validator-pluginJS-".concat(model), "validator-plugin.js");
+                template.writeCzm("configJS-".concat(model), "config.js");
                 template.writeCzm("html-".concat(model).concat("-").concat(broadcast), type.getProjectName().concat(".html"));
+                template.writeCzm("pluginHtml-".concat(model), type.getProjectName().concat("Plugin.html"));
                 template.writeCzm("jquery.base64", "jquery.base64.js");
                 template.writeCzm("request-".concat(model), "request.js");
                 

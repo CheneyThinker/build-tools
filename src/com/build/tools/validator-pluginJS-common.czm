@@ -1,0 +1,148 @@
+(function($, undefined) {
+  //验证器持有者映射
+  var validator = {
+		notNull: isNotNull,
+		phone: checkPhone,
+		email: checkEmail,
+		prompt: showPrompt
+	};
+
+	/*验证器持有者映射实现-start*/
+	//校验是否非空
+	function isNotNull(v) {
+		return v !== '';
+	}
+	//校验是否为正确的手机号
+	function checkPhone(v) {
+		return /^(((13[0-9]{1})|(15[0-9]{1})|(17[0-9]{1})|(18[0-9]{1})|(19[0-9]{1})|(147))+\d{8})$/.test(v);
+	}
+	//校验是否为正确的邮箱
+	function checkEmail(v) {
+		return /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(v);
+	}
+	function showPrompt(msg, duration) {
+		var m = document.createElement('div');
+		m.innerHTML = msg;
+		m.style.cssText = "width:60%; background:#000; opacity:0.8; color:#fff; line-height:22px; text-align:center; border-radius:5px; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%); z-index:999999; font-size:14px; padding:2%; text-shadow:none;";
+		document.body.appendChild(m);
+		setTimeout(function() {
+			var d = 0.5;
+			m.style.webkitTransition = '-webkit-transform ' + d + 's ease-in, opacity ' + d + 's ease-in';
+			m.style.opacity = '0';
+			setTimeout(function() {
+				document.body.removeChild(m)
+			}, d * 1000);
+		}, duration);
+	}
+	/*验证器持有者映射实现-end*/
+
+	//数据提交插件
+	$.fn.extend({
+		validate: function() {
+			var curE = $(this);
+			//如果属于附件上传或文字与对应码之间转换不能满足同一input体类表现时采用自定义属性map进行值填充
+			var value = $.trim(curE.attr('map') || curE.val());
+			if (curE.attr('map') !== undefined || curE.attr('type') !== 'hidden') {
+				var required = curE.attr('required') || 'true';
+				if (required === 'true') {
+					var validates = [ 'notNull' ];
+					var promptes = [ '不允许为空!' ];
+					var prompt = curE.attr('prompt') || 'default';
+					var promptTime = curE.attr('promptTime') || '3000';
+					var validate = curE.attr('validate') || 'default';
+					if (prompt != 'default' && validate != 'default') {
+						if (validate.indexOf('-') != -1) {
+							$.merge(validates, validate.split('-'));
+							$.merge(promptes, prompt.split('-'));
+						} else {
+							validates.push(validate);
+							promptes.push(prompt);
+						}
+					}
+					for (var i in validates) {
+						if (!validator[validates[i]](value)) {
+							var head = curE.attr('name').split('-')[1];
+							validator.prompt(head + promptes[i], promptTime);
+							return false;
+						}
+					}
+				}
+			}
+			return value;
+		},
+		fillData: function(obj) {
+			for (var key in obj) {
+				$('#' + key).val(obj[key]);
+			}
+		},
+		installData: function() {
+			var data = new Object();
+			var items = $(this).find('input');
+			for (var i = 0, j = items.length; i < j; i++) {
+				var submit = $(items[i]).attr('submit') || 'yes';
+				if (submit === 'yes') {
+					var itemValue = $(items[i]).validate();
+					if (!$.isValue(itemValue)) {
+						return false;
+					}
+					data[$(items[i]).attr('name').split('-')[0]] = itemValue;
+				}
+			}
+			return data;
+		},
+		submitRequest: function(options, prevObj) {
+			var data = this.installData();
+			if ($.isValue(data)) {
+				if (prevObj !== undefined) {
+					for (var key in prevObj) {
+						if (!(key in data)) {
+							data[key] = prevObj[key];
+						}
+					}
+				}
+				options.data = data;
+				$.submitRequest(options);
+			}
+		}
+	});
+	$.extend({
+		//用于检测validate返回值类型
+		isValue: function(v) {
+			return (typeof v) !== 'boolean';
+		},
+		submitRequest: function(options) {
+			var submitType = options.submitType || 'json';
+			var url = options.data.url;
+			delete options.data.url;
+			$.ajax({
+				url : initOptions.backStage + url,
+				type : options.type || 'post',
+				data : submitType === 'json' ? { data: JSON.stringify(options.data) } : options.data,
+				dataType : options.dataType || 'json',
+				beforeSend: function(xhr) {
+					if(options.hasOwnProperty('beforeSend')) {
+						options.beforeSend(xhr)
+					}
+				},
+				complete: function(xhr) {
+					if (options.hasOwnProperty('complete')) {
+						options.complete(xhr);
+					}
+				}
+			}).then(function(res) {
+				console.log(res);
+				if (res.code == 200) {
+					options.success(res.data);
+				} else if (res.code == 404) {
+					if (options.hasOwnProperty('duration')) {
+						validator.prompt(res.msg, options.duration);
+					} else {
+						options.error(res.msg, res.data);
+					}
+				} else {
+					options.expand(res);
+				}
+			});
+		}
+	});
+})(jQuery);

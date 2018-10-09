@@ -24,7 +24,8 @@ import java.util.Map;
  */
 @WebFilter({
     "/%project%/index",
-    "/%project%/refresh%project%"
+    "/%project%/refresh%project%",
+    "/%project%/reload%project%"
 })
 public class %project%Filter implements Filter {
 

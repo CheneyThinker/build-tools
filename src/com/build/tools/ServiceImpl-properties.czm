@@ -37,7 +37,7 @@ public class %project%ServiceImpl implements %project%Service {
       map.put("logInfo", %project%Utils.getLogInfo());
       return map;
     } else {
-      return null;
+      throw new %project%Exception("授权未通过!");
     }
   }
   
@@ -50,6 +50,8 @@ public class %project%ServiceImpl implements %project%Service {
           %project%Utils.monitor%project%(map);
         }
       }
+    } else {
+      throw new %project%Exception("授权未通过!");
     }
   }
   
@@ -86,6 +88,8 @@ public class %project%ServiceImpl implements %project%Service {
       } catch (Exception e) {
         throw new %project%Exception(e.getMessage());
       }
+    } else {
+      throw new %project%Exception("授权未通过!");
     }
   }
   

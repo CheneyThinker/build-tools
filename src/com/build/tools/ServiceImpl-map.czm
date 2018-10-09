@@ -33,7 +33,7 @@ public class %project%ServiceImpl implements %project%Service {
       map.put("logInfo", %project%Utils.getLogInfo());
       return map;
     } else {
-      return null;
+      throw new %project%Exception("授权未通过!");
     }
   }
   
@@ -46,6 +46,8 @@ public class %project%ServiceImpl implements %project%Service {
           %project%Utils.monitor%project%(map);
         }
       }
+    } else {
+      throw new %project%Exception("授权未通过!");
     }
   }
   
@@ -57,6 +59,8 @@ public class %project%ServiceImpl implements %project%Service {
       yamlMapFactoryBean.setResources(fileSystemResource);
       map = (Map<String, Object>) yamlMapFactoryBean.getObject().get("%prefix%");
       %project%Utils.monitor%project%(map);
+    } else {
+      throw new %project%Exception("授权未通过!");
     }
   }
   
