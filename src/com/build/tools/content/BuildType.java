@@ -32,7 +32,7 @@ public class BuildType {
     jQuery = _jQuery;
   }
   
-	public String getPom(String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean lombok, boolean xml, String broadcast) {
+  public String getPom(String[] outerJar, String[] wsdlJars, boolean sourceOfWsdl, boolean lombok, boolean xml, String broadcast) {
     builder.delete(0, builder.length())
     .append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     .append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n")

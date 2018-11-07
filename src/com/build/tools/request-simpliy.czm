@@ -2,7 +2,7 @@ $.base64.utf8encode = true
 
 function postAndGet(type, data, success, error) {
   $.ajax({
-    url       : 'http://127.0.0.1:%port%/%project%/invoke',
+    url       : window.backStageUrl || 'http://127.0.0.1:%port%/%project%/invoke',
     type      : type,
     data      : data,
     dataType  : 'json'

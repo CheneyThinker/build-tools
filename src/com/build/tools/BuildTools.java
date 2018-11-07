@@ -155,7 +155,7 @@ public class BuildTools {
                   BuildUtils.serviceImpl();
                   template.writeCzm("ServiceImpl-".concat(reloadYmlAs), type.getProjectName().concat("ServiceImpl.java"));
                 }
-                BuildUtils.utils();
+                BuildUtils.util();
                 template.writeCzm("Utils-".concat(xml).concat("-").concat(model), type.getProjectName().concat("Utils.java"));
                 template.writeCzm("BeanUtils", "BeanUtils.java");
                 template.writeCzm("ReflectUtils", "ReflectUtils.java");
@@ -321,5 +321,5 @@ public class BuildTools {
     writer.write(content);
     writer.close();  
   }
-
+  
 }

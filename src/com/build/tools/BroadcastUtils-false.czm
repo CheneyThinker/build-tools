@@ -1,4 +1,4 @@
-package com.%package%.utils;
+package com.%package%.util;
 
 import com.%package%.core.BroadcastWrapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

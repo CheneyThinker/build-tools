@@ -3,7 +3,7 @@ package com.%package%.filter;
 import com.%package%.config.%project%YMLConfig;
 import com.%package%.core.ResponseGenerator;
 import com.%package%.exception.%project%Exception;
-import com.%package%.utils.%project%Utils;
+import com.%package%.util.%project%Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

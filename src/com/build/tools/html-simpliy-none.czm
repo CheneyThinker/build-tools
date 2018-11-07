@@ -79,7 +79,8 @@
   <script>
     $(
       function() {
-      
+        var monitor = (window.location.href.split('?')[1] || '').split('&');
+        window.backStageUrl = monitor[0];
         /*
         postJson
         (
@@ -114,7 +115,7 @@
             methodOf%project%: 'index',
             sign: hex_md5('%project% By %author%'),
             author: '%author%',
-            fileName: '%project%.log'
+            fileName: monitor[1] || '%project%.log'
           },
           function(data) {
             var projectKey = '', projectValue = ''

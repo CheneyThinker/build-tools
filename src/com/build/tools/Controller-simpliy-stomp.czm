@@ -3,7 +3,7 @@ package com.%package%.controller;
 import com.%package%.core.Response;
 import com.%package%.core.ResponseGenerator;
 import com.%package%.exception.%project%Exception;
-import com.%package%.utils.%project%Utils;
+import com.%package%.util.%project%Utils;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;

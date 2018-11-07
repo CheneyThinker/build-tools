@@ -1,6 +1,6 @@
 package com.%package%.core;
 
-import com.%package%.utils.BroadcastUtils;
+import com.%package%.util.BroadcastUtils;
 
 /**
  * @description

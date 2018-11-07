@@ -2,7 +2,7 @@ package com.%package%.service;
 
 import com.%package%.config.%project%YMLConfig;
 import com.%package%.exception.%project%Exception;
-import com.%package%.utils.%project%Utils;
+import com.%package%.util.%project%Utils;
 import org.springframework.beans.factory.config.YamlMapFactoryBean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;

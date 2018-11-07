@@ -1,6 +1,6 @@
 package com.%package%.config;
 
-import com.%package%.utils.%project%Utils;
+import com.%package%.util.%project%Utils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;

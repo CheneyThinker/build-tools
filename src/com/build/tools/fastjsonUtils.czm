@@ -1,0 +1,117 @@
+package com.%package%.util;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.dom4j.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @description
+ * @author %author%
+ * @date %date%
+ */
+public final class Xml2JsonUtils {
+
+  public static final JSONObject xml2JsonInternal(String xmlContent) {
+    try {
+      return element2JSONObject(DocumentHelper.parseText(xmlContent).getRootElement(), new JSONObject());
+    } catch (DocumentException e) {
+      return null;
+    }
+  }
+
+  public static final JSONObject xml2Json(String xmlContent) {
+    try {
+      return element2JSONObject(DocumentHelper.parseText(xmlContent).getRootElement());
+    } catch (DocumentException e) {
+      return null;
+    }
+  }
+
+  public static final void element2JSONObject(Element element, JSONObject jsonObject) {
+    if (element.isTextOnly()) {
+      jsonObject.put(element.getName(), element.getTextTrim());
+    } else {
+      ((List<Element>) element.elements()).forEach(outerElement -> {
+        if (outerElement.isTextOnly()) {
+          element2JSONObject(outerElement, jsonObject);
+        } else {
+          Map<String, Integer> counter = new HashMap<>();
+          ((List<Element>) outerElement.elements()).forEach(innerElement -> counter.put(innerElement.getName(), counter.containsKey(innerElement.getName()) ? counter.remove(innerElement.getName()) + 1 : 1));
+          counter.values().forEach(value -> {
+            if (1 == value) {
+              JSONObject newJsonObject = new JSONObject();
+              ((List<Element>) outerElement.elements()).forEach(innerElement -> element2JSONObject(innerElement, newJsonObject));
+              jsonObject.put(outerElement.getName(), newJsonObject);
+            } else {
+              JSONArray jsonArray = new JSONArray();
+              ((List<Element>) outerElement.elements()).forEach(innerElement -> {
+                JSONObject newJsonObject = new JSONObject();
+                element2JSONObject(innerElement, newJsonObject);
+                jsonArray.add(newJsonObject);
+              });
+              jsonObject.put(outerElement.getName(), jsonArray);
+            }
+          });
+        }
+      });
+    }
+    return jsonObject;
+  }
+
+  public static final JSONObject element2JSONObject(Element element) {
+    JSONObject jsonObject = new JSONObject();
+    if (element.isTextOnly()) {
+      jsonObject.put(element.getName(), element.getTextTrim());
+    } else {
+      ((List<Element>) element.elements()).forEach(outerElement -> {
+        if (outerElement.isTextOnly()) {
+          jsonObject.putAll(element2JSONObject(outerElement));
+        } else {
+          Map<String, Integer> counter = new HashMap<>();
+          ((List<Element>) outerElement.elements()).forEach(innerElement -> counter.put(innerElement.getName(), counter.containsKey(innerElement.getName()) ? counter.remove(innerElement.getName()) + 1 : 1));
+          counter.values().forEach(value -> {
+            if (1 == value) {
+              JSONObject newJsonObject = new JSONObject();
+              ((List<Element>) outerElement.elements()).forEach(innerElement -> newJsonObject.putAll(element2JSONObject(innerElement)));
+              jsonObject.put(outerElement.getName(), newJsonObject);
+            } else {
+              JSONArray jsonArray = new JSONArray();
+              ((List<Element>) outerElement.elements()).forEach(innerElement -> jsonArray.add(element2JSONObject(innerElement)));
+              jsonObject.put(outerElement.getName(), jsonArray);
+            }
+          });
+        }
+      });
+    }
+    return jsonObject;
+  }
+
+  public static final String buildXml(Map<String, Object> map) {
+    return buildXml(DocumentHelper.createDocument(), map).asXML();
+  }
+
+  public static final Branch buildXml(String rootName, Map<String, Object> map) {
+    return buildXml(DocumentHelper.createElement(rootName), map);
+  }
+
+  private static final Branch buildXml(final Branch branch, final Map<String, Object> map) {
+    map.forEach((key, value) -> {
+      Element element = DocumentHelper.createElement(key);
+      if (value instanceof Map) {
+        buildXml(element, (Map<String, Object>) value);
+      } else if (value instanceof List) {
+        ((List<Map>) value).forEach(item -> buildXml(item));
+      } else {
+        element.setText((String) value);
+      }
+      branch.add(element);
+    });
+    return branch;
+  }
+
+}

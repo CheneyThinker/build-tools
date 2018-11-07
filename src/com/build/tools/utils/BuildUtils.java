@@ -87,8 +87,8 @@ public final class BuildUtils {
     tempFile.mkdirs();
   }
   
-  public static void utils() {
-    tempFile = new File(backfile.getPath().concat("/utils"));
+  public static void util() {
+    tempFile = new File(backfile.getPath().concat("/util"));
     tempFile.mkdirs();
   }
   
