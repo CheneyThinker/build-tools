@@ -1,3 +1,6 @@
-var initOptions = {
-	backStage: 'http://127.0.0.1:%port%/%project%/invoke'
+var globalEnvironment = 'local';//local test prod
+var globalConfig = {
+  local: {
+    backStage: 'http://%ip%:%port%/%project%/invoke'
+  }
 }

@@ -101,14 +101,14 @@
         })
         */
 
-        $('#plugin').fillData({
+        $.fillData({
           sign: hex_md5('%project% By %author%')
         });
 
         /*
         $('#author').attr('submit', 'no');
         $('#fileName').attr('submit', 'no');
-        $('#plugin').fillData({
+        $.fillData({
           method: 'reload%project%',
           yml: 'application-default.yml'
         });
@@ -120,7 +120,7 @@
         */
 
         $('#yml').attr('submit', 'no');
-        $('#plugin').fillData({
+        $.fillData({
           method: 'index',
           fileName: '%project%.log'
         });

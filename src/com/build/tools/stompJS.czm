@@ -5,7 +5,7 @@ function setConnected(connected) {
   $("#send").prop("disabled", !connected);
 }
 function connect() {
-  var socket = new SockJS('http://127.0.0.1:%port%/%project%WebSocketServer');
+  var socket = new SockJS('http://%ip%:%port%/%project%WebSocketServer');
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function (frame) {
     setConnected(true);

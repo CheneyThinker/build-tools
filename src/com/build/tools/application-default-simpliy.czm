@@ -7,4 +7,4 @@ server:
     major: 1.0.0
     logPath: logs/
   inter:
-    invoke: http://127.0.0.1:%port%/%project%/invoke
+    invoke: http://%ip%:%port%/%project%/invoke

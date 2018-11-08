@@ -1,8 +1,10 @@
 package com.build.tools;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 
 import com.build.tools.content.BuildType;
 import com.build.tools.utils.BuildUtils;
@@ -17,6 +19,12 @@ public class Template {
   
   public void writeCzm(String czmFile, String fileName) {
     try {
+      String ip;
+      try {
+    	ip = InetAddress.getLocalHost().getHostAddress();
+      } catch (UnknownHostException e) {
+    	ip = "127.0.0.1";
+      }
       URL url = Template.class.getResource(czmFile.concat(".czm"));
       URLConnection urlConnection = url.openConnection();
       InputStream in = urlConnection.getInputStream();
@@ -32,6 +40,7 @@ public class Template {
       result = result.replaceAll("%small%", type.getFirstLowerCase());
       result = result.replaceAll("%port%", type.getPort());
       result = result.replaceAll("%jQuery%", type.getjQuery());
+      result = result.replaceAll("%ip%", ip);
       BuildUtils.write(result, fileName);
     } catch (Exception e) {
       e.printStackTrace();

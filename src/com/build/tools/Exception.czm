@@ -7,7 +7,7 @@ import com.%package%.core.ResponseCode;
  * @author %author%
  * @date %date%
  */
-public final class %project%Exception extends Exception {
+public final class %project%Exception extends RuntimeException {
 
   private ResponseCode responseCode;
   private Object data;
